@@ -5,6 +5,7 @@ refuses on any failed row; the passing rows go into the bundle."""
 import csv
 import re
 import sys
+import time
 from pathlib import Path
 
 from . import MANIFESTS_DIR, al_bench, check as check_mod, pins
@@ -76,7 +77,9 @@ def run_realworld(tool: str, codebase: str, jobs: int, root: Path | None = None)
     bundle.record_checks(rows)
     workdir = bundle.dir / "raw"
     workdir.mkdir()
+    t0 = time.monotonic()
     dones, recs = ad.run_realworld(cfg, workdir, jobs)
+    bundle.meta["timing"]["scan_wall_s"] = round(time.monotonic() - t0, 3)
     _record(bundle, dones, root=Path(cfg["path"]))
     recs, dropped = _dedupe(recs)
     if dropped:
@@ -123,12 +126,15 @@ def run_juliet(tool: str, cwes: list[str] | None, jobs: int, root: Path | None =
     workdir.mkdir()
     per_cwe = []
     status = "ok"
+    bundle.meta["timing"]["scan_wall_s"] = 0.0
     for d in dirs:
         cwe_id = re.match(r"(CWE\d+)", d.name).group(1)
         files = sorted(d.rglob("*.c"))
         sections = {f: al_bench.juliet_sections(f) for f in files}
         with_bad = sum(1 for s in sections.values() if s["bad_lines"])
+        t0 = time.monotonic()
         dones, recs = ad.run_juliet_cwe(d, support, workdir, jobs)
+        bundle.meta["timing"]["scan_wall_s"] = round(bundle.meta["timing"]["scan_wall_s"] + time.monotonic() - t0, 3)
         if not dones and not recs:
             bundle.note(f"{d.name}: skipped -- {tool} has no per-CWE manifest for it at the pinned commit")
             per_cwe.append([d.name, cwe_id, len(files), with_bad, "skipped", 0, 0, 0, 0])

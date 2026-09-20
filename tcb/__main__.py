@@ -8,6 +8,7 @@
   tcb run juliet --tool T [--cwes CWE121_...,CWE476_...] [--jobs N]
   tcb mapping-coverage BUNDLE_DIR
   tcb selfcheck [--tools T,T] [--update] [--jobs N]
+  tcb timing --tool T --target C|juliet|juliet:CWE... [--repeats N] [--warmup N] [--cold] [--jobs N]
 """
 
 import argparse
@@ -93,6 +94,13 @@ def cmd_selfcheck(args) -> int:
     return selfcheck.run(_csv(args.tools), update=args.update, jobs=args.jobs)
 
 
+def cmd_timing(args) -> int:
+    from . import timing
+    timing.measure(args.tool, args.target, args.repeats, args.jobs, args.warmup, args.cold,
+                   args.max_load, args.force)
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="tcb", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -135,6 +143,17 @@ def main(argv=None) -> int:
     sc.add_argument("--update", action="store_true", help="rewrite the goldens from this run")
     sc.add_argument("--jobs", type=int, default=8)
     sc.set_defaults(func=cmd_selfcheck)
+
+    t = sub.add_parser("timing", help="controlled runtime measurement: repeated, sequential, contention-checked")
+    t.add_argument("--tool", required=True)
+    t.add_argument("--target", required=True, help="a corpus name, 'juliet', or 'juliet:CWE416_Use_After_Free'")
+    t.add_argument("--repeats", type=int, default=3)
+    t.add_argument("--warmup", type=int, default=1, help="untimed runs first (warm-cache figure); 0 with --cold")
+    t.add_argument("--cold", action="store_true", help="drop the page cache before every repeat (root)")
+    t.add_argument("--jobs", type=int, default=8)
+    t.add_argument("--max-load", type=float, default=1.0)
+    t.add_argument("--force", action="store_true", help="time under contention anyway (recorded, marked invalid)")
+    t.set_defaults(func=cmd_timing)
 
     args = p.parse_args(argv)
     if args.cmd == "run" and args.what == "realworld" and not args.codebase:

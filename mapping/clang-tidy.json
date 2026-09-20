@@ -1,0 +1,526 @@
+{
+  "_comment": [
+    "Hand-made mapping from this tool's native check ids to SEI CERT C rule ids",
+    "and CWE ids. It is DATA, not derived: every entry is a judgement about",
+    "what defect the check reports, made by reading the check's documentation,",
+    "and the harness records this file's sha256 into every run so a table can",
+    "say which version of the judgement it used. A check with no entry is",
+    "reported as `unmapped` -- counted, never dropped -- so the mapping's",
+    "coverage is itself a number a reader can see. `cert: []` means the check",
+    "names a defect CERT C has no rule for; `cwe: []` likewise.",
+    "Add entries with a `note` saying why; change one only with a note saying",
+    "what was wrong.",
+    "",
+    "clang-tidy's cert-* checks name the CERT rule in their id, so `patterns`",
+    "maps them mechanically (`cert-err33-c` -> ERR33-C); their CWE ids come",
+    "from the pinned aurora-lint's data/rule_cwe_map.json (rule -> CWEs), and",
+    "the harness records that file's sha256 too. The clang-analyzer-* checkers",
+    "are mapped by hand below, like cppcheck's ids."
+  ],
+  "source": "hand-made",
+  "unmapped_policy": "counted",
+  "tool": "clang-tidy",
+  "patterns": [
+    {
+      "regex": "^cert-([a-z]{3})(\\d{2})-c$",
+      "cert": "upper(\\1)\\2-C",
+      "cwe": "aurora-lint rule_cwe_map",
+      "note": "cert-<rule>-c is the rule id in lower case"
+    }
+  ],
+  "entries": {
+    "clang-analyzer-core.NullDereference": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.NonNullParamChecker": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": "null passed to a nonnull parameter"
+    },
+    "clang-analyzer-core.CallAndMessage": {
+      "cert": [
+        "EXP33-C",
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-457",
+        "CWE-476"
+      ],
+      "note": "call through an uninitialized or null function pointer / uninitialized argument"
+    },
+    "clang-analyzer-core.DivideZero": {
+      "cert": [
+        "INT33-C"
+      ],
+      "cwe": [
+        "CWE-369"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.UndefinedBinaryOperatorResult": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": "operand is uninitialized"
+    },
+    "clang-analyzer-core.uninitialized.Assign": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.uninitialized.Branch": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.uninitialized.UndefReturn": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.uninitialized.ArraySubscript": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.uninitialized.CapturedBlockVariable": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.uninitialized.NewArraySize": {
+      "cert": [],
+      "cwe": [],
+      "note": "C++ only"
+    },
+    "clang-analyzer-core.StackAddressEscape": {
+      "cert": [
+        "DCL30-C"
+      ],
+      "cwe": [
+        "CWE-562"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.StackAddrEscapeBase": {
+      "cert": [
+        "DCL30-C"
+      ],
+      "cwe": [
+        "CWE-562"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.VLASize": {
+      "cert": [
+        "ARR32-C"
+      ],
+      "cwe": [
+        "CWE-129"
+      ],
+      "note": "VLA with a zero, negative or tainted size"
+    },
+    "clang-analyzer-core.BitwiseShift": {
+      "cert": [
+        "INT34-C"
+      ],
+      "cwe": [
+        "CWE-1335"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-core.FixedAddressDereference": {
+      "cert": [],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-unix.Malloc": {
+      "cert": [
+        "MEM30-C",
+        "MEM31-C"
+      ],
+      "cwe": [
+        "CWE-401",
+        "CWE-415",
+        "CWE-416"
+      ],
+      "note": "one checker reports leak, double free and use after free; the message text distinguishes them"
+    },
+    "clang-analyzer-unix.MallocSizeof": {
+      "cert": [
+        "MEM35-C"
+      ],
+      "cwe": [
+        "CWE-131"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-unix.MismatchedDeallocator": {
+      "cert": [],
+      "cwe": [
+        "CWE-762"
+      ],
+      "note": "no CERT C rule"
+    },
+    "clang-analyzer-unix.API": {
+      "cert": [],
+      "cwe": [
+        "CWE-628"
+      ],
+      "note": "misuse of a POSIX API; no single CERT rule"
+    },
+    "clang-analyzer-unix.Vfork": {
+      "cert": [
+        "POS33-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-unix.cstring.NullArg": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-unix.cstring.BadSizeArg": {
+      "cert": [
+        "ARR38-C"
+      ],
+      "cwe": [
+        "CWE-119"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-unix.cstring.NotNullTerminated": {
+      "cert": [
+        "STR32-C"
+      ],
+      "cwe": [
+        "CWE-170"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-unix.cstring.OutOfBounds": {
+      "cert": [
+        "ARR38-C"
+      ],
+      "cwe": [
+        "CWE-119"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-unix.cstring.UninitializedRead": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-unix.StdCLibraryFunctions": {
+      "cert": [],
+      "cwe": [
+        "CWE-628"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-unix.Stream": {
+      "cert": [
+        "FIO42-C",
+        "FIO46-C"
+      ],
+      "cwe": [
+        "CWE-775"
+      ],
+      "note": "stream misuse: leak, use after close"
+    },
+    "clang-analyzer-unix.BlockInCriticalSection": {
+      "cert": [
+        "CON05-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-deadcode.DeadStores": {
+      "cert": [
+        "MSC13-C"
+      ],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-nullability.NullPassedToNonnull": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-nullability.NullReturnedFromNonnull": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-nullability.NullableDereferenced": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-nullability.NullablePassedToNonnull": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-nullability.NullableReturnedFromNonnull": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.strcpy": {
+      "cert": [
+        "STR31-C"
+      ],
+      "cwe": [
+        "CWE-120"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.gets": {
+      "cert": [
+        "STR31-C"
+      ],
+      "cwe": [
+        "CWE-242"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.getpw": {
+      "cert": [
+        "STR31-C"
+      ],
+      "cwe": [
+        "CWE-120"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.rand": {
+      "cert": [
+        "MSC30-C"
+      ],
+      "cwe": [
+        "CWE-338"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.vfork": {
+      "cert": [
+        "POS33-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.mktemp": {
+      "cert": [
+        "FIO21-C"
+      ],
+      "cwe": [
+        "CWE-377"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.mkstemp": {
+      "cert": [
+        "FIO21-C"
+      ],
+      "cwe": [
+        "CWE-377"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.UncheckedReturn": {
+      "cert": [
+        "ERR33-C"
+      ],
+      "cwe": [
+        "CWE-252"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.bzero": {
+      "cert": [
+        "MSC24-C"
+      ],
+      "cwe": [
+        "CWE-477"
+      ],
+      "note": "obsolescent function"
+    },
+    "clang-analyzer-security.insecureAPI.bcopy": {
+      "cert": [
+        "MSC24-C"
+      ],
+      "cwe": [
+        "CWE-477"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.bcmp": {
+      "cert": [
+        "MSC24-C"
+      ],
+      "cwe": [
+        "CWE-477"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling": {
+      "cert": [
+        "MSC24-C"
+      ],
+      "cwe": [
+        "CWE-676"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-security.insecureAPI.decodeValueOfObjCType": {
+      "cert": [],
+      "cwe": [],
+      "note": "Objective-C"
+    },
+    "clang-analyzer-security.FloatLoopCounter": {
+      "cert": [
+        "FLP30-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-security.cert.env.InvalidPtr": {
+      "cert": [
+        "ENV34-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-security.PutenvStackArray": {
+      "cert": [
+        "POS34-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-security.SetgidSetuidOrder": {
+      "cert": [
+        "POS36-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-valist.Uninitialized": {
+      "cert": [
+        "MSC39-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-valist.Unterminated": {
+      "cert": [
+        "MSC39-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-valist.CopyToSelf": {
+      "cert": [
+        "MSC39-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-optin.portability.UnixAPI": {
+      "cert": [],
+      "cwe": [],
+      "note": ""
+    },
+    "clang-analyzer-optin.taint.TaintedAlloc": {
+      "cert": [
+        "MEM35-C"
+      ],
+      "cwe": [
+        "CWE-789"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-optin.taint.GenericTaint": {
+      "cert": [],
+      "cwe": [
+        "CWE-20"
+      ],
+      "note": ""
+    },
+    "clang-analyzer-optin.core.EnumCastOutOfRange": {
+      "cert": [
+        "INT36-C"
+      ],
+      "cwe": [],
+      "note": ""
+    }
+  }
+}

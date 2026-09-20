@@ -1,0 +1,827 @@
+{
+  "_comment": [
+    "Hand-made mapping from this tool's native check ids to SEI CERT C rule ids",
+    "and CWE ids. It is DATA, not derived: every entry is a judgement about",
+    "what defect the check reports, made by reading the check's documentation,",
+    "and the harness records this file's sha256 into every run so a table can",
+    "say which version of the judgement it used. A check with no entry is",
+    "reported as `unmapped` -- counted, never dropped -- so the mapping's",
+    "coverage is itself a number a reader can see. `cert: []` means the check",
+    "names a defect CERT C has no rule for; `cwe: []` likewise.",
+    "Add entries with a `note` saying why; change one only with a note saying",
+    "what was wrong."
+  ],
+  "source": "hand-made",
+  "unmapped_policy": "counted",
+  "tool": "cppcheck",
+  "entries": {
+    "nullPointer": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": "null pointer dereference"
+    },
+    "nullPointerRedundantCheck": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": "dereference before a later null check"
+    },
+    "nullPointerArithmetic": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": "arithmetic on a null pointer"
+    },
+    "nullPointerArithmeticRedundantCheck": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": ""
+    },
+    "uninitvar": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": "read of an uninitialized variable"
+    },
+    "uninitdata": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": "read of uninitialized memory"
+    },
+    "uninitStructMember": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "memleak": {
+      "cert": [
+        "MEM31-C"
+      ],
+      "cwe": [
+        "CWE-401"
+      ],
+      "note": "allocated memory not freed"
+    },
+    "memleakOnRealloc": {
+      "cert": [
+        "MEM31-C"
+      ],
+      "cwe": [
+        "CWE-401"
+      ],
+      "note": "realloc result overwrites the only pointer"
+    },
+    "leakReturnValNotUsed": {
+      "cert": [
+        "MEM31-C"
+      ],
+      "cwe": [
+        "CWE-401"
+      ],
+      "note": "allocation result discarded"
+    },
+    "resourceLeak": {
+      "cert": [
+        "FIO42-C"
+      ],
+      "cwe": [
+        "CWE-775"
+      ],
+      "note": "file handle not closed"
+    },
+    "doubleFree": {
+      "cert": [
+        "MEM30-C"
+      ],
+      "cwe": [
+        "CWE-415"
+      ],
+      "note": ""
+    },
+    "deallocuse": {
+      "cert": [
+        "MEM30-C"
+      ],
+      "cwe": [
+        "CWE-416"
+      ],
+      "note": "use after free"
+    },
+    "deallocDealloc": {
+      "cert": [
+        "MEM30-C"
+      ],
+      "cwe": [
+        "CWE-415"
+      ],
+      "note": "cppcheck's older double-free id"
+    },
+    "mismatchAllocDealloc": {
+      "cert": [],
+      "cwe": [
+        "CWE-762"
+      ],
+      "note": "C has no CERT rule for allocator/deallocator mismatch (MEM51-CPP is C++)"
+    },
+    "arrayIndexOutOfBounds": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119",
+        "CWE-121",
+        "CWE-122",
+        "CWE-125"
+      ],
+      "note": ""
+    },
+    "arrayIndexOutOfBoundsCond": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119"
+      ],
+      "note": "out of bounds under a condition"
+    },
+    "bufferAccessOutOfBounds": {
+      "cert": [
+        "ARR30-C",
+        "ARR38-C"
+      ],
+      "cwe": [
+        "CWE-119",
+        "CWE-120",
+        "CWE-126",
+        "CWE-127"
+      ],
+      "note": "library call reads or writes past a buffer"
+    },
+    "negativeIndex": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-129",
+        "CWE-124",
+        "CWE-127"
+      ],
+      "note": ""
+    },
+    "pointerOutOfBounds": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119"
+      ],
+      "note": "pointer arithmetic past the object"
+    },
+    "pointerOutOfBoundsCond": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119"
+      ],
+      "note": ""
+    },
+    "objectIndex": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119"
+      ],
+      "note": "index on a non-array object"
+    },
+    "integerOverflow": {
+      "cert": [
+        "INT32-C"
+      ],
+      "cwe": [
+        "CWE-190"
+      ],
+      "note": "signed overflow"
+    },
+    "integerOverflowCond": {
+      "cert": [
+        "INT32-C"
+      ],
+      "cwe": [
+        "CWE-190"
+      ],
+      "note": ""
+    },
+    "shiftTooManyBits": {
+      "cert": [
+        "INT34-C"
+      ],
+      "cwe": [
+        "CWE-1335"
+      ],
+      "note": ""
+    },
+    "shiftTooManyBitsSigned": {
+      "cert": [
+        "INT34-C"
+      ],
+      "cwe": [
+        "CWE-1335"
+      ],
+      "note": ""
+    },
+    "shiftNegative": {
+      "cert": [
+        "INT34-C"
+      ],
+      "cwe": [
+        "CWE-1335"
+      ],
+      "note": ""
+    },
+    "shiftNegativeLHS": {
+      "cert": [
+        "INT34-C"
+      ],
+      "cwe": [
+        "CWE-1335"
+      ],
+      "note": ""
+    },
+    "zerodiv": {
+      "cert": [
+        "INT33-C"
+      ],
+      "cwe": [
+        "CWE-369"
+      ],
+      "note": ""
+    },
+    "zerodivcond": {
+      "cert": [
+        "INT33-C"
+      ],
+      "cwe": [
+        "CWE-369"
+      ],
+      "note": "division by zero under a condition"
+    },
+    "truncLongCastAssignment": {
+      "cert": [
+        "INT31-C"
+      ],
+      "cwe": [
+        "CWE-197"
+      ],
+      "note": "numeric truncation"
+    },
+    "truncLongCastReturn": {
+      "cert": [
+        "INT31-C"
+      ],
+      "cwe": [
+        "CWE-197"
+      ],
+      "note": ""
+    },
+    "signConversion": {
+      "cert": [
+        "INT31-C"
+      ],
+      "cwe": [
+        "CWE-195"
+      ],
+      "note": ""
+    },
+    "invalidPointerCast": {
+      "cert": [
+        "EXP36-C"
+      ],
+      "cwe": [
+        "CWE-704"
+      ],
+      "note": ""
+    },
+    "autoVariables": {
+      "cert": [
+        "DCL30-C"
+      ],
+      "cwe": [
+        "CWE-562"
+      ],
+      "note": "address of a local escapes"
+    },
+    "returnDanglingLifetime": {
+      "cert": [
+        "DCL30-C"
+      ],
+      "cwe": [
+        "CWE-562"
+      ],
+      "note": ""
+    },
+    "danglingLifetime": {
+      "cert": [
+        "DCL30-C"
+      ],
+      "cwe": [
+        "CWE-562"
+      ],
+      "note": ""
+    },
+    "danglingTemporaryLifetime": {
+      "cert": [
+        "DCL30-C"
+      ],
+      "cwe": [
+        "CWE-562"
+      ],
+      "note": ""
+    },
+    "invalidscanf": {
+      "cert": [
+        "FIO47-C",
+        "STR31-C"
+      ],
+      "cwe": [
+        "CWE-120"
+      ],
+      "note": "scanf without a width"
+    },
+    "wrongPrintfScanfArgNum": {
+      "cert": [
+        "FIO47-C"
+      ],
+      "cwe": [
+        "CWE-685"
+      ],
+      "note": ""
+    },
+    "invalidPrintfArgType_s": {
+      "cert": [
+        "FIO47-C"
+      ],
+      "cwe": [
+        "CWE-686"
+      ],
+      "note": ""
+    },
+    "invalidPrintfArgType_int": {
+      "cert": [
+        "FIO47-C"
+      ],
+      "cwe": [
+        "CWE-686"
+      ],
+      "note": ""
+    },
+    "invalidPrintfArgType_uint": {
+      "cert": [
+        "FIO47-C"
+      ],
+      "cwe": [
+        "CWE-686"
+      ],
+      "note": ""
+    },
+    "invalidPrintfArgType_sint": {
+      "cert": [
+        "FIO47-C"
+      ],
+      "cwe": [
+        "CWE-686"
+      ],
+      "note": ""
+    },
+    "invalidPrintfArgType_float": {
+      "cert": [
+        "FIO47-C"
+      ],
+      "cwe": [
+        "CWE-686"
+      ],
+      "note": ""
+    },
+    "invalidScanfArgType_int": {
+      "cert": [
+        "FIO47-C"
+      ],
+      "cwe": [
+        "CWE-686"
+      ],
+      "note": ""
+    },
+    "invalidScanfArgType_float": {
+      "cert": [
+        "FIO47-C"
+      ],
+      "cwe": [
+        "CWE-686"
+      ],
+      "note": ""
+    },
+    "formatString": {
+      "cert": [
+        "FIO30-C"
+      ],
+      "cwe": [
+        "CWE-134"
+      ],
+      "note": ""
+    },
+    "va_list_usedBeforeStarted": {
+      "cert": [
+        "MSC39-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": ""
+    },
+    "va_end_missing": {
+      "cert": [
+        "MSC39-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "missingReturn": {
+      "cert": [
+        "MSC37-C"
+      ],
+      "cwe": [
+        "CWE-758"
+      ],
+      "note": ""
+    },
+    "unreadVariable": {
+      "cert": [
+        "MSC13-C"
+      ],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": "assigned, never read"
+    },
+    "unusedVariable": {
+      "cert": [
+        "MSC13-C"
+      ],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": ""
+    },
+    "unusedAllocatedMemory": {
+      "cert": [
+        "MSC13-C"
+      ],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": ""
+    },
+    "bufferNotZeroTerminated": {
+      "cert": [
+        "STR32-C"
+      ],
+      "cwe": [
+        "CWE-170"
+      ],
+      "note": ""
+    },
+    "comparePointers": {
+      "cert": [
+        "ARR36-C"
+      ],
+      "cwe": [
+        "CWE-469"
+      ],
+      "note": "pointers into different objects compared"
+    },
+    "invalidFunctionArg": {
+      "cert": [],
+      "cwe": [
+        "CWE-628"
+      ],
+      "note": "library call with an invalid argument; no single CERT rule"
+    },
+    "invalidFunctionArgBool": {
+      "cert": [],
+      "cwe": [
+        "CWE-628"
+      ],
+      "note": ""
+    },
+    "uninitMemberVar": {
+      "cert": [],
+      "cwe": [],
+      "note": "C++ only"
+    },
+    "unusedFunction": {
+      "cert": [],
+      "cwe": [
+        "CWE-561"
+      ],
+      "note": "whole-program dead code; no CERT rule"
+    },
+    "variableScope": {
+      "cert": [
+        "DCL19-C"
+      ],
+      "cwe": [],
+      "note": "scope could be reduced; recommendation, not a rule"
+    },
+    "constParameter": {
+      "cert": [
+        "DCL00-C"
+      ],
+      "cwe": [],
+      "note": "recommendation"
+    },
+    "constParameterPointer": {
+      "cert": [
+        "DCL00-C"
+      ],
+      "cwe": [],
+      "note": "recommendation"
+    },
+    "constVariable": {
+      "cert": [
+        "DCL00-C"
+      ],
+      "cwe": [],
+      "note": "recommendation"
+    },
+    "constVariablePointer": {
+      "cert": [
+        "DCL00-C"
+      ],
+      "cwe": [],
+      "note": "recommendation"
+    },
+    "knownConditionTrueFalse": {
+      "cert": [
+        "MSC12-C"
+      ],
+      "cwe": [
+        "CWE-570",
+        "CWE-571"
+      ],
+      "note": ""
+    },
+    "duplicateCondition": {
+      "cert": [
+        "MSC12-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "redundantAssignment": {
+      "cert": [
+        "MSC13-C"
+      ],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": ""
+    },
+    "redundantInitialization": {
+      "cert": [
+        "MSC13-C"
+      ],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": ""
+    },
+    "unsignedLessThanZero": {
+      "cert": [
+        "INT02-C"
+      ],
+      "cwe": [
+        "CWE-570"
+      ],
+      "note": ""
+    },
+    "unsignedPositive": {
+      "cert": [
+        "INT02-C"
+      ],
+      "cwe": [
+        "CWE-571"
+      ],
+      "note": ""
+    },
+    "syntaxError": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool could not parse; coverage, not a finding"
+    },
+    "internalAstError": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool internal error; coverage, not a finding"
+    },
+    "preprocessorErrorDirective": {
+      "cert": [],
+      "cwe": [],
+      "note": "#error hit under the tool's configuration"
+    },
+    "missingInclude": {
+      "cert": [],
+      "cwe": [],
+      "note": "coverage"
+    },
+    "checkersReport": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool chatter"
+    },
+    "toomanyconfigs": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool chatter"
+    },
+    "unmatchedSuppression": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool chatter"
+    },
+    "shadowVariable": {
+      "cert": [
+        "DCL01-C"
+      ],
+      "cwe": [],
+      "note": "recommendation: inner scope hides an outer name"
+    },
+    "shadowFunction": {
+      "cert": [
+        "DCL01-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "shadowArgument": {
+      "cert": [
+        "DCL01-C"
+      ],
+      "cwe": [],
+      "note": ""
+    },
+    "duplicateExpression": {
+      "cert": [
+        "MSC12-C"
+      ],
+      "cwe": [],
+      "note": "same expression on both sides of an operator; usually dead code"
+    },
+    "deallocret": {
+      "cert": [
+        "MEM30-C"
+      ],
+      "cwe": [
+        "CWE-416"
+      ],
+      "note": "freed pointer returned"
+    },
+    "invalidLifetime": {
+      "cert": [
+        "DCL30-C"
+      ],
+      "cwe": [
+        "CWE-562"
+      ],
+      "note": ""
+    },
+    "uselessAssignmentPtrArg": {
+      "cert": [
+        "MSC13-C"
+      ],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": ""
+    },
+    "unusedStructMember": {
+      "cert": [],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": ""
+    },
+    "ctunullpointer": {
+      "cert": [
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-476"
+      ],
+      "note": "cross-TU null pointer"
+    },
+    "ctuuninitvar": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457"
+      ],
+      "note": "cross-TU uninitialized"
+    },
+    "ctuArrayIndex": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119"
+      ],
+      "note": ""
+    },
+    "ctuPointerArith": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119"
+      ],
+      "note": ""
+    },
+    "nullPointerOutOfMemory": {
+      "cert": [
+        "EXP34-C",
+        "ERR33-C"
+      ],
+      "cwe": [
+        "CWE-476",
+        "CWE-690"
+      ],
+      "note": "allocation result used unchecked"
+    },
+    "nullPointerOutOfResources": {
+      "cert": [
+        "EXP34-C",
+        "ERR33-C"
+      ],
+      "cwe": [
+        "CWE-476",
+        "CWE-690"
+      ],
+      "note": ""
+    },
+    "ignoredReturnValue": {
+      "cert": [
+        "ERR33-C"
+      ],
+      "cwe": [
+        "CWE-252"
+      ],
+      "note": ""
+    },
+    "checkLibraryNoReturn": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool chatter"
+    },
+    "checkLibraryFunction": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool chatter"
+    },
+    "checkLibraryCheckType": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool chatter"
+    },
+    "normalCheckLevelMaxBranches": {
+      "cert": [],
+      "cwe": [],
+      "note": "tool chatter"
+    }
+  }
+}

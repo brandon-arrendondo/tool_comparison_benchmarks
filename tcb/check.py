@@ -217,6 +217,9 @@ def check_aurora_lint() -> list[Row]:
     newest_src = max((p.stat().st_mtime for p in (co / "src").rglob("*.rs")), default=0)
     if binary.stat().st_mtime < newest_src:
         rows.append(Row("aurora-lint", "binary-fresh", "FAIL", "older than src/", "newer than src/", remedy))
+    n_manifests = len(list((co / "rules_templates" / "cwe").glob("CWE-*.toml")))
+    rows.append(Row("aurora-lint", "cwe-manifests", "OK" if n_manifests > 1 else "FAIL",
+                    f"{n_manifests} generated", "> 1 (fast-mode Juliet manifests)", remedy))
     return rows
 
 

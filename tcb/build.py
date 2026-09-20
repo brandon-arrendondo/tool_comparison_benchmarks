@@ -37,4 +37,20 @@ def build(jobs: int | None = None) -> int:
         return rc
     out = subprocess.run([str(aurora_lint_binary()), "--version"], capture_output=True, text=True).stdout
     print(f"built: {out.strip()} -> {aurora_lint_binary()}")
-    return 0
+    return generate_cwe_manifests(co)
+
+
+def generate_cwe_manifests(co) -> int:
+    """aurora-lint's per-CWE Juliet manifests (rules_templates/cwe/CWE-<n>.toml,
+    fast mode) are generated from the rule TOMLs by its own script and are
+    not tracked, so a fresh checkout has none; its Juliet runner generates
+    them before every run and so does this harness, from the pinned commit's
+    script, so the fast-mode rule sets are the ones that commit defines."""
+    script = co / "scripts" / "generate_rule_cwe_map.py"
+    if not script.exists():
+        print(f"no {script.name} at this commit; fast-mode Juliet runs will be skipped", file=sys.stderr)
+        return 0
+    r = subprocess.run(["python3", str(script)], cwd=co, capture_output=True, text=True, timeout=120)
+    n = len(list((co / "rules_templates" / "cwe").glob("CWE-*.toml")))
+    print(f"per-CWE manifests: {n} under rules_templates/cwe/ (rc={r.returncode})")
+    return 0 if r.returncode == 0 else r.returncode

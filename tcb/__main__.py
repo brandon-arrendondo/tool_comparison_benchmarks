@@ -4,6 +4,9 @@
   tcb build-aurora-lint [--jobs N]
   tcb env [--json]
   tcb bundles [--dir DIR]
+  tcb run realworld --tool T --codebase C [--jobs N]
+  tcb run juliet --tool T [--cwes CWE121_...,CWE476_...] [--jobs N]
+  tcb mapping-coverage BUNDLE_DIR
 """
 
 import argparse
@@ -62,6 +65,28 @@ def cmd_bundles(args) -> int:
     return 0
 
 
+def cmd_run(args) -> int:
+    from . import run as run_mod
+    if args.what == "realworld":
+        d = run_mod.run_realworld(args.tool, args.codebase, args.jobs)
+    else:
+        d = run_mod.run_juliet(args.tool, _csv(args.cwes), args.jobs)
+    m = bundle_mod.read_meta(d)
+    print(f"bundle: {d}  status={m['status']} findings={m['finding_count']}")
+    return 0 if m["status"] == "ok" else 2
+
+
+def cmd_mapping(args) -> int:
+    from . import mapping as mapping_mod
+    b = Path(args.bundle)
+    m = bundle_mod.read_meta(b)
+    cov = mapping_mod.coverage(m["tool"], [f["check_id"] for f in bundle_mod.read_findings(b)])
+    print(f"{m['tool']} {m['target']}: findings {cov['findings']}  check ids {cov['check_ids']}")
+    for cid, n in cov["unmapped_top"]:
+        print(f"  unmapped {n:6d}  {cid}")
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="tcb", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -87,7 +112,21 @@ def main(argv=None) -> int:
     l.add_argument("--dir")
     l.set_defaults(func=cmd_bundles)
 
+    r = sub.add_parser("run", help="run one tool on one target and write a bundle under runs/")
+    r.add_argument("what", choices=["realworld", "juliet"])
+    r.add_argument("--tool", required=True, help="aurora-lint | aurora-lint-full | cppcheck | clang-tidy")
+    r.add_argument("--codebase", help="realworld: a corpus name from pins/corpus.json")
+    r.add_argument("--cwes", help="juliet: comma-separated CWE directory names (default: manifests/juliet_cwes.txt)")
+    r.add_argument("--jobs", type=int, default=8)
+    r.set_defaults(func=cmd_run)
+
+    mp = sub.add_parser("mapping-coverage", help="how much of a bundle the check mapping speaks for")
+    mp.add_argument("bundle")
+    mp.set_defaults(func=cmd_mapping)
+
     args = p.parse_args(argv)
+    if args.cmd == "run" and args.what == "realworld" and not args.codebase:
+        p.error("run realworld needs --codebase")
     return args.func(args)
 
 

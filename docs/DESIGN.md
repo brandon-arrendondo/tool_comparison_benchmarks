@@ -1,6 +1,6 @@
 # tool_comparison_benchmarks — design note (aurora_lint task 1391)
 
-Status: approved 2026-09-20; phase 1 built. Public repo, so ADR-0007 (no
+Status: approved 2026-09-20; all five phases built (README is the how-to). Public repo, so ADR-0007 (no
 defect locations, no unfixed-disclosure detail), Apache-2.0 + NOTICE first,
 Postgres-blind, no node names in committed content, no vendored tools.
 

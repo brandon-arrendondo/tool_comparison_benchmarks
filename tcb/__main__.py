@@ -8,6 +8,7 @@
   tcb run juliet --tool T [--cwes CWE121_...,CWE476_...] [--jobs N]
   tcb mapping-coverage BUNDLE_DIR
   tcb selfcheck [--tools T,T] [--update] [--jobs N]
+  tcb table NAME BUNDLE... [--out DIR] [--labels-repo PATH]
   tcb timing --tool T --target C|juliet|juliet:CWE... [--repeats N] [--warmup N] [--cold] [--jobs N]
 """
 
@@ -101,6 +102,21 @@ def cmd_timing(args) -> int:
     return 0
 
 
+def cmd_table(args) -> int:
+    from . import tables
+    fn = tables.TABLES[args.name]
+    out_dir = Path(args.out) if args.out else None
+    paths = [Path(p) for p in args.inputs]
+    if args.name == "realworld-precision":
+        if not args.labels_repo:
+            sys.exit("realworld-precision needs --labels-repo PATH (a benchmark_adjudication clone)")
+        text = fn(paths, Path(args.labels_repo), out_dir)
+    else:
+        text = fn(paths, out_dir)
+    print(text, end="")
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="tcb", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -154,6 +170,14 @@ def main(argv=None) -> int:
     t.add_argument("--max-load", type=float, default=1.0)
     t.add_argument("--force", action="store_true", help="time under contention anyway (recorded, marked invalid)")
     t.set_defaults(func=cmd_timing)
+
+    tb = sub.add_parser("table", help="one result table from bundles (or timing records), CSV + Markdown")
+    tb.add_argument("name", choices=["juliet-per-cwe", "juliet-summary", "realworld-counts",
+                                     "realworld-precision", "timing", "environment"])
+    tb.add_argument("inputs", nargs="+", help="bundle directories (timing: runs/timing/*.json)")
+    tb.add_argument("--labels-repo", help="realworld-precision: path to a benchmark_adjudication clone")
+    tb.add_argument("--out", help="directory to write <name>.csv, <name>.md and <name>.footer.json")
+    tb.set_defaults(func=cmd_table)
 
     args = p.parse_args(argv)
     if args.cmd == "run" and args.what == "realworld" and not args.codebase:

@@ -25,16 +25,18 @@ mismatch as a tool difference.
 
 ## Status
 
-Phase 1 of 5 (see `docs/DESIGN.md`): pins, checks, environment record,
-aurora-lint build, run-bundle format. Runners, mapping data, self-check,
-timing protocol and tables follow in that order.
+All five phases of `docs/DESIGN.md` are built: pins and checks, adapters
+and runners for aurora-lint (two modes), cppcheck and clang-tidy,
+findings-level bundles, the check mapping, the self-check, the timing
+protocol and the tables. Infer and Frama-C are pinned and checked but have
+no adapter yet.
 
 ## Setup
 
 Provision the corpora and tools as aurora-lint's
 [benchmark-setup](https://github.com/brandon-arrendondo/aurora-lint/blob/main/docs/benchmark-setup.rst)
-describes — the same `SQC_BENCH_ROOT` (default `~/toolchain`) serves both —
-then:
+describes -- the same `SQC_BENCH_ROOT` (default `~/toolchain`) serves both
+-- and clone `benchmark_adjudication` beside this repository. Then:
 
 ```bash
 python3 -m tcb build-aurora-lint         # clone + cargo build the pinned commit into .cache/
@@ -43,16 +45,62 @@ python3 -m tcb check --labels-repo ../benchmark_adjudication
 
 `check` prints one row per assertion (tool version, resolved path, package
 origin; every corpus at its pin, clean, no stray `.c`/`.h`; the Juliet
-commit; the built aurora-lint's commit and version; the labels commit
-reachable) and exits nonzero with a remedy on every row that is off. A run
-refuses to start on any failed row and writes the rows it passed into its
-bundle.
+commit; the built aurora-lint's commit, version, freshness and generated
+per-CWE manifests; the labels commit reachable) and exits nonzero with a
+remedy on every row that is off. A run refuses to start on any failed row
+and writes the rows it passed into its bundle.
+
+## Running
 
 ```bash
-python3 -m tcb env                       # what a run bundle records about this machine
-python3 -m tcb bundles                   # list run bundles under runs/
-python3 -m unittest discover -s tests    # synthetic-input tests, no tools or corpora needed
+python3 -m tcb run juliet    --tool aurora-lint            # per-CWE manifest (fast mode)
+python3 -m tcb run juliet    --tool aurora-lint-full       # rules-all.toml
+python3 -m tcb run juliet    --tool cppcheck
+python3 -m tcb run juliet    --tool clang-tidy
+python3 -m tcb run realworld --tool cppcheck --codebase lua
 ```
+
+Each run writes one bundle under `runs/` (see `tcb bundles`): `meta.json`
+(the checks as they passed, the environment, every command line with its
+exit status and CPU time, mapping digests and coverage), `findings.jsonl`
+(one record per finding, sorted), `per_file.csv` and, for Juliet,
+`per_cwe.csv`. The Juliet CWE list is `manifests/juliet_cwes.txt`, the
+same for every tool; `--cwes` narrows it.
+
+## Tables
+
+One command per table, from bundles, CSV + Markdown, footer naming every
+pin and hash:
+
+```bash
+python3 -m tcb table juliet-per-cwe      runs/*-juliet-2026*/ --out tables/
+python3 -m tcb table juliet-summary      runs/*-juliet-2026*/ --out tables/
+python3 -m tcb table realworld-counts    runs/*-lua-*/ runs/*-libcrc-*/ --out tables/
+python3 -m tcb table realworld-precision runs/*-lua-*/ --labels-repo ../benchmark_adjudication --out tables/
+python3 -m tcb table timing              runs/timing/*.json --out tables/
+python3 -m tcb table environment         runs/*/ --out tables/
+```
+
+Juliet precision is reported twice: over every finding a tool emits on a
+CWE's test cases (`precision_all`), and over the findings whose check the
+mapping says reports *that* CWE (`precision_cwe`), which is the like-for-
+like figure; `detection` is the share of test cases with a bad region in
+which such a finding landed. Real-world precision for a competitor is a
+proxy until its own findings are adjudicated (the table says `via
+mapping` and prints the label coverage); aurora-lint's is direct.
+
+## Checks that keep it honest
+
+```bash
+python3 -m tcb selfcheck                 # every tool on Juliet CWE-416 vs tests/golden/ (Juliet-only goldens)
+python3 -m tcb timing --tool cppcheck --target lua --repeats 5   # the only source of a runtime figure
+python3 -m tcb mapping-coverage runs/<bundle>                    # what the mapping does not speak for
+python3 -m tcb env                                               # what a bundle records about this machine
+python3 -m unittest discover -s tests                            # synthetic-input tests
+```
+
+`docs/reproducing.md` says what matches byte for byte on one machine,
+what the environment moves across machines, and how to tell them apart.
 
 ## What is committed and what stays local
 

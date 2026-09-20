@@ -7,6 +7,7 @@
   tcb run realworld --tool T --codebase C [--jobs N]
   tcb run juliet --tool T [--cwes CWE121_...,CWE476_...] [--jobs N]
   tcb mapping-coverage BUNDLE_DIR
+  tcb selfcheck [--tools T,T] [--update] [--jobs N]
 """
 
 import argparse
@@ -87,6 +88,11 @@ def cmd_mapping(args) -> int:
     return 0
 
 
+def cmd_selfcheck(args) -> int:
+    from . import selfcheck
+    return selfcheck.run(_csv(args.tools), update=args.update, jobs=args.jobs)
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="tcb", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -123,6 +129,12 @@ def main(argv=None) -> int:
     mp = sub.add_parser("mapping-coverage", help="how much of a bundle the check mapping speaks for")
     mp.add_argument("bundle")
     mp.set_defaults(func=cmd_mapping)
+
+    sc = sub.add_parser("selfcheck", help="rerun the Juliet sample per tool and compare to tests/golden/")
+    sc.add_argument("--tools", help="comma-separated tool ids (default: all)")
+    sc.add_argument("--update", action="store_true", help="rewrite the goldens from this run")
+    sc.add_argument("--jobs", type=int, default=8)
+    sc.set_defaults(func=cmd_selfcheck)
 
     args = p.parse_args(argv)
     if args.cmd == "run" and args.what == "realworld" and not args.codebase:

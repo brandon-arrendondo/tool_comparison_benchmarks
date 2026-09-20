@@ -1,0 +1,8 @@
+check_id,section,findings
+clang-analyzer-core.NullDereference,bad,3
+clang-analyzer-core.NullDereference,good,21
+clang-analyzer-deadcode.DeadStores,good,12
+clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,bad,21
+clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,good,68
+clang-analyzer-unix.Malloc,bad,38
+clang-analyzer-unix.Malloc,good,60

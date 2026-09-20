@@ -1,0 +1,18 @@
+{
+  "aurora_lint_sha": "92eae76c23265c197c77b365b8c1688f88a1b52d",
+  "finding_count": 321,
+  "juliet_sha": "f88433e3443648a17671398797a04ea1f8e1a274",
+  "made_on": {
+    "distro_id": "ubuntu-24.04",
+    "glibc": "glibc 2.39"
+  },
+  "pins": {
+    "aurora_lint.json": "99211f02fda0e0c2327149ef1b3fea0ad3142d30866d509c70213d750eac5c04",
+    "corpus.json": "e1078deca5700e82d635c2edf87a15b141238411201e63c4d9ac42af8ffcdc17",
+    "labels.json": "ddcf85faafc23873ba05746960cc632b2a2586db50cac3acf0f470ac96042b1d",
+    "tools.json": "25a4d133b718f1c01a5e306d26112e30f1782bbdfe57302530f6b3984e56e84f"
+  },
+  "sample": "CWE416_Use_After_Free",
+  "tool": "aurora-lint",
+  "tool_version": "0.5.2"
+}

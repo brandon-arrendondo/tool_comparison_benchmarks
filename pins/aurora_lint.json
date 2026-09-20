@@ -6,7 +6,7 @@
   ],
   "repo": "https://github.com/brandon-arrendondo/aurora-lint.git",
   "sha": "92eae76c23265c197c77b365b8c1688f88a1b52d",
-  "tag": null,
+  "tag": "v0.5.2",
   "version": "0.5.2",
   "benchmark_tool_id": "sqc"
 }

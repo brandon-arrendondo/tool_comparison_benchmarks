@@ -104,8 +104,6 @@ what the environment moves across machines, and how to tell them apart.
 
 ## Open
 
-- `pins/aurora_lint.json` pins commit `92eae76c` with `tag: null`; set the
-  tag once `v0.5.2` is cut on that commit.
 - `pins/tools.json`: the Debian 12 cppcheck row has no `package_version`
   yet; fill it from `dpkg-query -W cppcheck` on a bookworm node.
 - Infer and Frama-C are pinned and checked but have no adapter.

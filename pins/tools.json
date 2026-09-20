@@ -1,0 +1,116 @@
+{
+  "_comment": [
+    "Every competitor this harness may run, pinned. `tcb check tools` asserts",
+    "each row before a run and records the assertion in the run bundle; a",
+    "mismatch is a failed check with the remedy printed, never a recorded",
+    "'whatever we found' version.",
+    "",
+    "Three things are asserted per tool, because a version string alone is not",
+    "an identity: (1) the version the tool prints, (2) where the resolved",
+    "binary comes from (a distribution package, a package from apt.llvm.org, a",
+    "prebuilt archive by digest, an opam switch) -- a PyPI `clang-tidy` wheel",
+    "and the apt.llvm.org build both print 21.x -- and (3) the resolved path,",
+    "so a shim earlier on PATH cannot shadow the pinned install.",
+    "",
+    "`version_policy`: 'exact' -- the printed version must equal `version`;",
+    "'distro' -- the version is whatever the pinned distribution ships and",
+    "never moves, so it is asserted per distro from `by_distro` and the run",
+    "records which one applied (a Debian 12 node and an Ubuntu 24.04 node",
+    "measure different cppcheck releases, stably); 'major' -- only the major",
+    "must match, the full string is recorded.",
+    "",
+    "`origin.kind`: 'dpkg' -- `dpkg -S <resolved path>` must name `package`",
+    "and its installed version must match `package_version` (or, for policy",
+    "'distro', the per-distro package version); 'prebuilt' -- the file at",
+    "`path` must exist and, when `sha256_of` is set, that archive or binary",
+    "must hash to `sha256`; 'opam' -- invoked through `opam exec --`, the",
+    "switch's installed package version must match.",
+    "",
+    "aurora-lint itself is pinned in pins/aurora_lint.json and built from",
+    "source, so it has no row here."
+  ],
+  "tools": {
+    "cppcheck": {
+      "binary": "cppcheck",
+      "version_cmd": [
+        "cppcheck",
+        "--version"
+      ],
+      "version_regex": "Cppcheck (\\d+\\.\\d+(?:\\.\\d+)?)",
+      "version_policy": "distro",
+      "by_distro": {
+        "ubuntu-24.04": {
+          "version": "2.13.0",
+          "package_version": "2.13.0-2ubuntu3"
+        },
+        "debian-12": {
+          "version": "2.10",
+          "package_version": null,
+          "_note": "package_version unverified on a bookworm node; fill in from `dpkg-query -W cppcheck` there"
+        }
+      },
+      "origin": {
+        "kind": "dpkg",
+        "package": "cppcheck"
+      },
+      "resolved_path": "/usr/bin/cppcheck",
+      "license": "GPL-3.0-or-later"
+    },
+    "clang-tidy": {
+      "binary": "clang-tidy",
+      "version_cmd": [
+        "clang-tidy",
+        "--version"
+      ],
+      "version_regex": "LLVM version (\\d+\\.\\d+\\.\\d+)",
+      "version_policy": "exact",
+      "version": "21.1.8",
+      "origin": {
+        "kind": "dpkg",
+        "package": "clang-tidy-21",
+        "package_version_regex": "^1:21\\.1\\.8~",
+        "apt_source": "apt.llvm.org llvm-toolchain-<release>-21"
+      },
+      "resolved_path": "/usr/lib/llvm-21/bin/clang-tidy",
+      "license": "Apache-2.0 WITH LLVM-exception"
+    },
+    "infer": {
+      "binary": "infer",
+      "version_cmd": [
+        "infer",
+        "--version"
+      ],
+      "version_regex": "Infer version v(\\d+\\.\\d+\\.\\d+)",
+      "version_policy": "exact",
+      "version": "1.2.0",
+      "origin": {
+        "kind": "prebuilt",
+        "archive_url": "https://github.com/facebook/infer/releases/download/v1.2.0/infer-linux-x86_64-v1.2.0.tar.xz",
+        "sha256": "21504063fb3a1dbc7919f34dc6e50ca0d35f50b996d91deb7b8bea8243d52d82",
+        "install_dir": "/opt/infer-linux-x86_64-v1.2.0"
+      },
+      "resolved_path": "/opt/infer-linux-x86_64-v1.2.0/lib/infer/infer/bin/infer",
+      "license": "MIT"
+    },
+    "frama-c": {
+      "binary": "frama-c",
+      "version_cmd": [
+        "opam",
+        "exec",
+        "--",
+        "frama-c",
+        "-version"
+      ],
+      "version_regex": "(\\d+\\.\\d+)",
+      "version_policy": "exact",
+      "version": "33.0",
+      "origin": {
+        "kind": "opam",
+        "package": "frama-c",
+        "package_version": "33.0"
+      },
+      "resolved_path": null,
+      "license": "LGPL-2.1-only"
+    }
+  }
+}

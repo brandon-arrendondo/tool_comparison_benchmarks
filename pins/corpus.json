@@ -1,0 +1,187 @@
+{
+  "_comment": [
+    "Copied verbatim from aurora-lint data/benchmark_repos.json at the commit",
+    "named in `source`; regenerate with `tcb pins refresh-corpus`, never hand-edit",
+    "the `repos` block. Each `version` is the commit the oracle labels are keyed",
+    "on. Juliet is pinned here too: every tool runs the same suite commit."
+  ],
+  "source": {
+    "aurora_lint_sha": "92eae76c23265c197c77b365b8c1688f88a1b52d",
+    "path": "data/benchmark_repos.json",
+    "sha256": "1e02f4f86bc741482f11cda3e09e4c645b4341b391eade5710605cec51128177"
+  },
+  "repos": [
+    {
+      "name": "libcrc",
+      "repo": "https://github.com/lammertb/libcrc.git",
+      "version": "7719e2112a9a960b1bba130d02bebdf58e8701f1"
+    },
+    {
+      "name": "sqlite",
+      "repo": "https://github.com/sqlite/sqlite.git",
+      "version": "b1a73ba34d05b32007315e4065c6468cc638e3af",
+      "scope_include": [
+        "src/**",
+        "ext/**"
+      ],
+      "scope_exclude": [
+        "src/test*.c",
+        "src/test_*.h",
+        "ext/*/test_*.c",
+        "ext/*/test_*.h",
+        "ext/jni/**",
+        "ext/wasm/**",
+        "src/tclsqlite.c",
+        "src/tclsqlite.h",
+        "ext/fts5/fts5_test_tok.c",
+        "ext/fts5/fts5_test_mi.c",
+        "ext/session/session_speed_test.c",
+        "ext/fts3/fts3_test.c",
+        "ext/fts3/fts3_term.c",
+        "ext/fts5/fts5_tcl.c",
+        "ext/misc/noop.c",
+        "ext/misc/qpvtab.c",
+        "ext/misc/randomjson.c",
+        "ext/misc/urifuncs.c",
+        "ext/session/changesetfuzz.c"
+      ]
+    },
+    {
+      "name": "mosquitto",
+      "repo": "https://github.com/eclipse-mosquitto/mosquitto.git",
+      "version": "d3ee5c5ca62c0fa4983308c6fff558ee978e878c",
+      "scope_include": [
+        "lib/**",
+        "src/**",
+        "include/**",
+        "config.h"
+      ],
+      "scope_exclude": [
+        "include/mosquitto/libmosquittopp.h",
+        "include/mosquittopp.h"
+      ]
+    },
+    {
+      "name": "curl",
+      "repo": "https://github.com/curl/curl.git",
+      "version": "3e198f75861cc2e12daf299689e145949dddd19b",
+      "scope_include": [
+        "lib/**",
+        "src/**"
+      ],
+      "scope_exclude": [
+        "lib/vtls/schannel.c",
+        "lib/vtls/schannel.h",
+        "lib/vtls/schannel_int.h",
+        "lib/vtls/schannel_verify.c",
+        "lib/vtls/apple.c",
+        "lib/vtls/apple.h",
+        "lib/system_win32.c",
+        "lib/system_win32.h",
+        "lib/curlx/winapi.c",
+        "lib/curlx/winapi.h",
+        "lib/curlx/version_win32.c",
+        "lib/curlx/version_win32.h",
+        "lib/curlx/multibyte.c",
+        "lib/curlx/multibyte.h"
+      ]
+    },
+    {
+      "name": "hostap",
+      "repo": "https://git.w1.fi/hostap.git",
+      "version": "dcee60436390dd34731560657c4257c3b4c839a6",
+      "scope_include": [
+        "src/**",
+        "wpa_supplicant/**",
+        "hostapd/**"
+      ]
+    },
+    {
+      "name": "lua",
+      "repo": "https://github.com/lua/lua.git",
+      "version": "40b76de2d77e66b70a9d4bf989c3f5340919973f",
+      "scope_include": [
+        "*.c",
+        "*.h"
+      ],
+      "scope_exclude": [
+        "onelua.c",
+        "ltests.c",
+        "ltests.h"
+      ]
+    },
+    {
+      "name": "raylib",
+      "repo": "https://github.com/raysan5/raylib.git",
+      "version": "962bbfc6bfbd7a5acd08e21314fcfa161003a589",
+      "scope_include": [
+        "src/*.c",
+        "src/*.h",
+        "src/platforms/*.c"
+      ],
+      "scope_exclude": [
+        "src/external/*"
+      ]
+    },
+    {
+      "name": "pureftpd",
+      "repo": "https://github.com/jedisct1/pure-ftpd.git",
+      "version": "cc28bff52ca28e1d122a2142bf37f2dc578f4d3e",
+      "scope_include": [
+        "src/**",
+        "puredb/**"
+      ]
+    },
+    {
+      "name": "sel4",
+      "repo": "https://github.com/seL4/seL4.git",
+      "version": "1326364bc9135d9445d936ebc01e38a402c1f4c6",
+      "scope_include": [
+        "src/**"
+      ]
+    },
+    {
+      "name": "mbedtls",
+      "repo": "https://github.com/Mbed-TLS/mbedtls.git",
+      "version": "068ff080b369adfac81509f9b57b2afabaf82dc5",
+      "scope_include": [
+        "library/**"
+      ]
+    },
+    {
+      "name": "valkey",
+      "repo": "https://github.com/valkey-io/valkey.git",
+      "version": "7f1dffedff6de73058b2c2a389422b6ecd56c8fb",
+      "scope_include": [
+        "src/*.c",
+        "src/*.h",
+        "src/trace/**",
+        "src/modules/lua/**"
+      ],
+      "scope_exclude": [
+        "src/modules/*.c",
+        "src/unit/**"
+      ]
+    },
+    {
+      "name": "ventoy",
+      "repo": "https://github.com/ventoy/Ventoy.git",
+      "version": "7cbdc5cf69935bcf1f085ae67f40e70ea7e74bae",
+      "scope_include": [
+        "Ventoy2Disk/Ventoy2Disk/*.c",
+        "Ventoy2Disk/Ventoy2Disk/*.h"
+      ],
+      "scope_exclude": [
+        "Ventoy2Disk/Ventoy2Disk/fat_io_lib/**",
+        "Ventoy2Disk/Ventoy2Disk/ff14/**",
+        "Ventoy2Disk/Ventoy2Disk/xz-embedded-20130513/**"
+      ]
+    }
+  ],
+  "juliet": {
+    "repo": "https://github.com/arichardson/juliet-test-suite-c.git",
+    "sha": "f88433e3443648a17671398797a04ea1f8e1a274",
+    "testcases_subdir": "testcases",
+    "support_subdir": "testcasesupport"
+  }
+}

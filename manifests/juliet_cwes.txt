@@ -1,0 +1,24 @@
+# The one CWE list every tool runs on Juliet (pins/corpus.json `juliet`).
+# One Juliet testcase directory prefix per line; `#` starts a comment.
+# C-only: a Juliet directory with no .c files is refused by the runner,
+# not recorded as 0/0 (aurora-lint bench/competitors.py, task 909).
+# The list is the union of what any compared tool claims to detect; a tool
+# that does not claim a CWE is still run on it and its findings recorded,
+# so "does not detect" is measured rather than assumed.
+CWE121_Stack_Based_Buffer_Overflow
+CWE122_Heap_Based_Buffer_Overflow
+CWE124_Buffer_Underwrite
+CWE126_Buffer_Overread
+CWE127_Buffer_Underread
+CWE190_Integer_Overflow
+CWE191_Integer_Underflow
+CWE197_Numeric_Truncation_Error
+CWE369_Divide_by_Zero
+CWE401_Memory_Leak
+CWE415_Double_Free
+CWE416_Use_After_Free
+CWE457_Use_of_Uninitialized_Variable
+CWE476_NULL_Pointer_Dereference
+CWE690_NULL_Deref_From_Return
+CWE761_Free_Pointer_Not_at_Start_of_Buffer
+CWE680_Integer_Overflow_to_Buffer_Overflow

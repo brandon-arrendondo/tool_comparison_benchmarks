@@ -1,0 +1,12 @@
+{
+  "_comment": [
+    "The aurora-lint build every table is computed with. `tcb check aurora-lint`",
+    "builds it from this commit into .cache/ and asserts `--version` and the",
+    "commit; `tag` is null until the release is tagged, then must name this sha."
+  ],
+  "repo": "https://github.com/brandon-arrendondo/aurora-lint.git",
+  "sha": "92eae76c23265c197c77b365b8c1688f88a1b52d",
+  "tag": null,
+  "version": "0.5.2",
+  "benchmark_tool_id": "sqc"
+}

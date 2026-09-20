@@ -1,0 +1,9 @@
+{
+  "_comment": [
+    "benchmark_adjudication commit whose data/<project>/adjudication.csv files are",
+    "the labels for `tcb table realworld-precision`. Read through `git show` at",
+    "this sha, so the local checkout may sit on any branch."
+  ],
+  "repo": "https://github.com/brandon-arrendondo/benchmark_adjudication.git",
+  "sha": "d5a09bca4f53c77a67903146977d79d14276b4cb"
+}

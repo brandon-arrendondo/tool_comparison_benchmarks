@@ -1,0 +1,8 @@
+# Raw runs stay local: they are findings that can locate defects in the
+# pinned corpora (see docs/DESIGN.md, "What may be committed").
+runs/
+# Pinned aurora-lint checkouts and builds.
+.cache/
+__pycache__/
+*.pyc
+.venv/

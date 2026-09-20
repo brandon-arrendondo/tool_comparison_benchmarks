@@ -1,0 +1,42 @@
+tool_comparison_benchmarks — a reproducible harness for comparing
+aurora-lint with other C static analyzers
+Copyright 2026 BISSELL Homecare, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+LICENSE holds the unmodified Apache-2.0 text, exactly as published by the
+Apache Software Foundation. Attribution belongs here, in NOTICE (Apache-2.0
+section 4(d)), and never inside LICENSE.
+
+-------------------------------------------------------------------------
+Third-party tools and data this harness drives, none of it vendored
+-------------------------------------------------------------------------
+
+This repository contains no third-party source code or binaries. It pins
+and invokes, by version, package version, source commit or file digest
+(see pins/), tools and corpora that a user installs separately under their
+own licenses:
+
+  * aurora-lint (Apache-2.0), built from a pinned commit.
+  * Cppcheck (GPL-3.0), clang-tidy (Apache-2.0 with LLVM exceptions),
+    Infer (MIT) and Frama-C (LGPL-2.1), each installed from its own
+    distribution channel; this harness only runs them.
+  * The Juliet Test Suite for C/C++ (public domain, NIST SARD) and the
+    open-source C codebases named in pins/corpus.json, each cloned at a
+    pinned commit under its own license.
+
+The CERT rule identifiers in mapping/ name rules of the SEI CERT C Coding
+Standard. Carnegie Mellon and CERT are registered trademarks of Carnegie
+Mellon University; they are used nominatively. This project is not
+affiliated with, endorsed by, or certified by Carnegie Mellon University or
+its Software Engineering Institute.

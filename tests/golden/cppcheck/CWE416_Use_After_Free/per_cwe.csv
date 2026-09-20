@@ -1,2 +1,2 @@
-cwe_dir,cwe,files,files_with_bad_section,status,findings,in_bad_section,in_good_section,unclassified
-CWE416_Use_After_Free,CWE416,150,150,ok,575,183,388,4
+cwe_dir,cwe,files,files_with_bad_section,flaw_lines,status,findings,in_bad_section,in_good_section,unclassified
+CWE416_Use_After_Free,CWE416,150,150,258,ok,575,183,388,4

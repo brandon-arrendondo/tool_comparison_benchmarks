@@ -822,6 +822,45 @@
       "cert": [],
       "cwe": [],
       "note": "tool chatter"
+    },
+    "allocaCalled": {
+      "cert": [
+        "MEM05-C"
+      ],
+      "cwe": [
+        "CWE-770"
+      ],
+      "note": "alloca() called; recommendation, obsolescent"
+    },
+    "unassignedVariable": {
+      "cert": [
+        "MSC13-C"
+      ],
+      "cwe": [
+        "CWE-563"
+      ],
+      "note": "declared, never assigned"
+    },
+    "constParameterCallback": {
+      "cert": [
+        "DCL00-C"
+      ],
+      "cwe": [],
+      "note": "recommendation"
+    },
+    "unknownMacro": {
+      "cert": [],
+      "cwe": [],
+      "note": "coverage: the tool could not resolve a macro"
+    },
+    "pointerSize": {
+      "cert": [
+        "ARR01-C"
+      ],
+      "cwe": [
+        "CWE-467"
+      ],
+      "note": "sizeof on a pointer where the object was meant"
     }
   }
 }

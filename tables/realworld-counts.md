@@ -1,0 +1,15 @@
+| project | tool | findings | in_scope | in_scope_keys | files | check_ids | mapped_% | invocations | failed_invocations | scan_wall_s(informational) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| libcrc | aurora-lint | 286 | 286 | 266 | 18 | 33 | 100.0 | 1 | 0 | 0.274 |
+| libcrc | clang-tidy | 2 | 2 | 2 | 1 | 2 | 100.0 | 9 | 2 | 0.055 |
+| libcrc | cppcheck | 19 | 19 | 19 | 8 | 1 | 100.0 | 1 | 0 | 0.02 |
+| lua | aurora-lint | 3816 | 3816 | 3582 | 58 | 100 | 100.0 | 1 | 0 | 7.264 |
+| lua | clang-tidy | 107 | 107 | 106 | 17 | 12 | 100.0 | 33 | 0 | 15.898 |
+| lua | cppcheck | 165 | 165 | 161 | 27 | 19 | 99.4 | 1 | 0 | 7.213 |
+
+_tool_comparison_benchmarks 8fa3afa36d0c; aurora-lint 92eae76c2326_  
+_tools: aurora-lint 0.5.2; clang-tidy 21.1.8; cppcheck 2.13.0_  
+_corpus pins: 1e02f4f86bc7 (benchmark_repos.json at aurora-lint 92eae76c2326); juliet f88433e34436_  
+_labels: benchmark_adjudication d5a09bca4f53_  
+_mapping: clang-tidy.json 40a814df673e; cppcheck.json e03cd9b06282; aurora-lint:data/rule_cwe_map.json ee91690bfe4d_  
+_environment: 12th Gen Intel(R) Core(TM) i5-12400, Ubuntu 24.04.5 LTS, glibc 2.39, dev-packages 91d70318a047_  

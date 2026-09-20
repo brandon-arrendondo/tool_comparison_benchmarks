@@ -125,6 +125,7 @@ def run_juliet(tool: str, cwes: list[str] | None, jobs: int, root: Path | None =
     workdir = bundle.dir / "raw"
     workdir.mkdir()
     per_cwe = []
+    flaw_rows = []
     status = "ok"
     bundle.meta["timing"]["scan_wall_s"] = 0.0
     for d in dirs:
@@ -132,12 +133,23 @@ def run_juliet(tool: str, cwes: list[str] | None, jobs: int, root: Path | None =
         files = sorted(d.rglob("*.c"))
         sections = {f: al_bench.juliet_sections(f) for f in files}
         with_bad = sum(1 for s in sections.values() if s["bad_lines"])
+        # Juliet marks each injected defect with a `FLAW:` comment. Only the
+        # ones inside a bad region are defects -- the good variants carry
+        # `POTENTIAL FLAW:` comments on code the fix makes safe -- so those
+        # positions are the recall denominator that travels with the bundle
+        # (a CWE-matched bad-region finding within one line of one is a hit,
+        # as aurora-lint's own Juliet benchmark counts it).
+        n_flaw = 0
+        for f, sec in sections.items():
+            for ln in sorted(sec["flaw_lines"] & sec["bad_lines"]):
+                flaw_rows.append([cwe_id, relpath(str(f), d.parent), ln])
+                n_flaw += 1
         t0 = time.monotonic()
         dones, recs = ad.run_juliet_cwe(d, support, workdir, jobs)
         bundle.meta["timing"]["scan_wall_s"] = round(bundle.meta["timing"]["scan_wall_s"] + time.monotonic() - t0, 3)
         if not dones and not recs:
             bundle.note(f"{d.name}: skipped -- {tool} has no per-CWE manifest for it at the pinned commit")
-            per_cwe.append([d.name, cwe_id, len(files), with_bad, "skipped", 0, 0, 0, 0])
+            per_cwe.append([d.name, cwe_id, len(files), with_bad, n_flaw, "skipped", 0, 0, 0, 0])
             continue
         _record(bundle, dones, d.name, root=d.parent)
         if any(x.returncode == 124 for x in dones):
@@ -158,13 +170,17 @@ def run_juliet(tool: str, cwes: list[str] | None, jobs: int, root: Path | None =
             counts[sec if sec in counts else "unknown"] += 1
             bundle.add_finding(project="juliet", codebase_commit=j["sha"], cwe=cwe_id,
                                testcase=f.stem if f is not None else None, section=sec, **r)
-        per_cwe.append([d.name, cwe_id, len(files), with_bad, "ok", len(recs),
+        per_cwe.append([d.name, cwe_id, len(files), with_bad, n_flaw, "ok", len(recs),
                         counts["bad"], counts["good"], counts["unknown"]])
         print(f"{d.name:55s} files={len(files):5d} findings={len(recs):6d} bad={counts['bad']:5d} good={counts['good']:5d}", flush=True)
     with open(bundle.dir / "per_cwe.csv", "w", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(["cwe_dir", "cwe", "files", "files_with_bad_section", "status",
+        w.writerow(["cwe_dir", "cwe", "files", "files_with_bad_section", "flaw_lines", "status",
                     "findings", "in_bad_section", "in_good_section", "unclassified"])
         w.writerows(per_cwe)
+    with open(bundle.dir / "flaw_lines.csv", "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["cwe", "file_path", "line"])
+        w.writerows(sorted(flaw_rows))
     _attach_mapping(bundle, tool, [f["check_id"] for f in bundle._findings])
     return bundle.finish(status)

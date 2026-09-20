@@ -1,0 +1,8 @@
+[
+  "tool_comparison_benchmarks 8fa3afa36d0c; aurora-lint 92eae76c2326",
+  "tools: aurora-lint 0.5.2; aurora-lint-full 0.5.2; clang-tidy 21.1.8; cppcheck 2.13.0",
+  "corpus pins: 1e02f4f86bc7 (benchmark_repos.json at aurora-lint 92eae76c2326); juliet f88433e34436",
+  "labels: benchmark_adjudication d5a09bca4f53",
+  "mapping: clang-tidy.json 40a814df673e; cppcheck.json e03cd9b06282; aurora-lint:data/rule_cwe_map.json ee91690bfe4d",
+  "environment: 12th Gen Intel(R) Core(TM) i5-12400, Ubuntu 24.04.5 LTS, glibc 2.39, dev-packages 91d70318a047"
+]

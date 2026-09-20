@@ -108,6 +108,11 @@ def _juliet_rows(loaded) -> tuple[list[list], list[dict]]:
         with open(b / "per_cwe.csv") as fh:
             for r in csv.DictReader(fh):
                 per_cwe_meta[r["cwe"]] = r
+        flaws = defaultdict(set)      # cwe -> {(file_path, line)}
+        if (b / "flaw_lines.csv").exists():
+            with open(b / "flaw_lines.csv") as fh:
+                for r in csv.DictReader(fh):
+                    flaws[r["cwe"]].add((r["file_path"], int(r["line"])))
         by_cwe = defaultdict(list)
         for f in recs:
             by_cwe[f["cwe"]].append(f)
@@ -115,20 +120,29 @@ def _juliet_rows(loaded) -> tuple[list[list], list[dict]]:
             fs = by_cwe.get(cwe, [])
             bad = sum(1 for f in fs if f["section"] == "bad")
             good = sum(1 for f in fs if f["section"] == "good")
-            mb = sum(1 for f in fs if f["section"] == "bad" and _cwe_matched(tool, f["check_id"], cwe))
+            matched_bad = [f for f in fs if f["section"] == "bad" and _cwe_matched(tool, f["check_id"], cwe)]
+            mb = len(matched_bad)
             mg = sum(1 for f in fs if f["section"] == "good" and _cwe_matched(tool, f["check_id"], cwe))
-            detected = len({f["testcase"] for f in fs if f["section"] == "bad" and _cwe_matched(tool, f["check_id"], cwe)})
-            with_bad = int(info["files_with_bad_section"])
-            rows.append([cwe, tool, info["status"], int(info["files"]), with_bad, len(fs), bad, good,
-                         _rate(bad, bad + good), mb, mg, _rate(mb, mb + mg), detected, _rate(detected, with_bad)])
+            # a flaw line is hit when a CWE-matched bad-region finding sits on
+            # it or one line off, as aurora-lint's bench/analyzer.py counts it
+            hit = set()
+            fl = flaws.get(cwe, set())
+            for f in matched_bad:
+                for dl in (-1, 0, 1):
+                    k = (f["file_path"], f["line"] + dl)
+                    if k in fl:
+                        hit.add(k)
+            n_flaw = int(info.get("flaw_lines", 0) or len(fl))
+            rows.append([cwe, tool, info["status"], int(info["files"]), n_flaw, len(fs), bad, good,
+                         _rate(bad, bad + good), mb, mg, _rate(mb, mb + mg), len(hit), _rate(len(hit), n_flaw)])
     return rows, metas
 
 
 def juliet_per_cwe(bundles: list[Path], out_dir: Path | None) -> str:
     rows, metas = _juliet_rows(_load(bundles))
-    header = ["cwe", "tool", "status", "files", "files_with_bad", "findings", "in_bad", "in_good",
+    header = ["cwe", "tool", "status", "files", "flaw_lines", "findings", "in_bad", "in_good",
               "precision_all_%", "cwe_matched_bad", "cwe_matched_good", "precision_cwe_%",
-              "testcases_detected", "detection_%"]
+              "flaw_lines_hit", "flaw_hit_%"]
     return _emit("juliet-per-cwe", header, rows, _footer(metas), out_dir)
 
 
@@ -142,14 +156,14 @@ def juliet_summary(bundles: list[Path], out_dir: Path | None) -> str:
     out = []
     for tool, rs in sorted(by_tool.items()):
         for label, sel in (("all-covered", rs), ("common", [r for r in rs if r[0] in common])):
-            files = sum(r[3] for r in sel); with_bad = sum(r[4] for r in sel)
+            files = sum(r[3] for r in sel); n_flaw = sum(r[4] for r in sel)
             bad = sum(r[6] for r in sel); good = sum(r[7] for r in sel)
-            mb = sum(r[9] for r in sel); mg = sum(r[10] for r in sel); det = sum(r[12] for r in sel)
-            out.append([tool, label, len(sel), files, with_bad, bad + good, bad, good, _rate(bad, bad + good),
-                        mb, mg, _rate(mb, mb + mg), det, _rate(det, with_bad)])
-    header = ["tool", "cwe_set", "cwes", "files", "files_with_bad", "findings", "in_bad", "in_good",
+            mb = sum(r[9] for r in sel); mg = sum(r[10] for r in sel); hit = sum(r[12] for r in sel)
+            out.append([tool, label, len(sel), files, n_flaw, bad + good, bad, good, _rate(bad, bad + good),
+                        mb, mg, _rate(mb, mb + mg), hit, _rate(hit, n_flaw)])
+    header = ["tool", "cwe_set", "cwes", "files", "flaw_lines", "findings", "in_bad", "in_good",
               "precision_all_%", "cwe_matched_bad", "cwe_matched_good", "precision_cwe_%",
-              "testcases_detected", "detection_%"]
+              "flaw_lines_hit", "flaw_hit_%"]
     return _emit("juliet-summary", header, out,
                  _footer(metas, {"common CWE set": ", ".join(sorted(common)) or "(none)"}), out_dir)
 

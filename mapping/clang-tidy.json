@@ -521,6 +521,31 @@
       ],
       "cwe": [],
       "note": ""
+    },
+    "clang-analyzer-security.ArrayBound": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119",
+        "CWE-125",
+        "CWE-787"
+      ],
+      "note": "out-of-bounds array access (LLVM 21 successor of alpha.security.ArrayBoundV2)"
+    },
+    "clang-analyzer-optin.taint.TaintedDiv": {
+      "cert": [
+        "INT33-C"
+      ],
+      "cwe": [
+        "CWE-369"
+      ],
+      "note": "division by a tainted value"
+    },
+    "cert-msc54-cpp": {
+      "cert": [],
+      "cwe": [],
+      "note": "C++ only (signal handler must be extern C)"
     }
   }
 }

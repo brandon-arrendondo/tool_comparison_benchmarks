@@ -58,13 +58,17 @@ class TablesTest(unittest.TestCase):
             b.add_finding(file_path="CWE476_x/t1.c", line=20, check_id="nullPointer", testcase="t1", section="good", **common)
             b.add_finding(file_path="CWE476_x/t2.c", line=10, check_id="uninitvar", testcase="t2", section="bad", **common)
             d = b.finish()
-            (d / "per_cwe.csv").write_text("cwe_dir,cwe,files,files_with_bad_section,status,findings,in_bad_section,in_good_section,unclassified\n"
-                                           "CWE476_x,CWE476,4,4,ok,3,2,1,0\n")
+            (d / "per_cwe.csv").write_text("cwe_dir,cwe,files,files_with_bad_section,flaw_lines,status,findings,in_bad_section,in_good_section,unclassified\n"
+                                           "CWE476_x,CWE476,4,4,4,ok,3,2,1,0\n")
+            # four flaw lines; t1:9 is one line off the nullPointer finding at 10 (a hit),
+            # t2:10 is on the uninitvar finding but that check is not CWE-476 (no hit)
+            (d / "flaw_lines.csv").write_text("cwe,file_path,line\nCWE476,CWE476_x/t1.c,9\nCWE476,CWE476_x/t2.c,10\n"
+                                              "CWE476,CWE476_x/t3.c,5\nCWE476,CWE476_x/t4.c,5\n")
             md = tables.juliet_per_cwe([d], None)
             row = [l for l in md.splitlines() if l.startswith("| CWE476")][0]
             cells = [c.strip() for c in row.strip("|").split("|")]
             # in_bad 2, in_good 1, precision_all 66.7; cwe-matched: nullPointer only -> 1 bad, 1 good, 50.0;
-            # detected test cases: t1 only -> 1 of 4 = 25.0
+            # flaw lines hit: 1 of 4 = 25.0
             self.assertEqual(cells[6:14], ["2", "1", "66.7", "1", "1", "50.0", "1", "25.0"])
 
 

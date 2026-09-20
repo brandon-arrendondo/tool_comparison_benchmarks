@@ -1,0 +1,19 @@
+| tool | version | target | distro | kernel | glibc | cpu | cores | ram_gb | dev_packages | dev_packages_sha256 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| aurora-lint | 0.5.2 | juliet | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| aurora-lint | 0.5.2 | libcrc | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| aurora-lint | 0.5.2 | lua | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| aurora-lint-full | 0.5.2 | juliet | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| clang-tidy | 21.1.8 | juliet | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| clang-tidy | 21.1.8 | libcrc | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| clang-tidy | 21.1.8 | lua | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| cppcheck | 2.13.0 | juliet | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| cppcheck | 2.13.0 | libcrc | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+| cppcheck | 2.13.0 | lua | Ubuntu 24.04.5 LTS | 7.0.0-31-generic | glibc 2.39 | 12th Gen Intel(R) Core(TM) i5-12400 | 12 | 31.1 | 457 | 91d70318a047 |
+
+_tool_comparison_benchmarks 8fa3afa36d0c; aurora-lint 92eae76c2326_  
+_tools: aurora-lint 0.5.2; aurora-lint-full 0.5.2; clang-tidy 21.1.8; cppcheck 2.13.0_  
+_corpus pins: 1e02f4f86bc7 (benchmark_repos.json at aurora-lint 92eae76c2326); juliet f88433e34436_  
+_labels: benchmark_adjudication d5a09bca4f53_  
+_mapping: clang-tidy.json 40a814df673e; cppcheck.json e03cd9b06282; aurora-lint:data/rule_cwe_map.json ee91690bfe4d_  
+_environment: 12th Gen Intel(R) Core(TM) i5-12400, Ubuntu 24.04.5 LTS, glibc 2.39, dev-packages 91d70318a047_  

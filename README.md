@@ -102,6 +102,19 @@ python3 -m unittest discover -s tests                            # synthetic-inp
 `docs/reproducing.md` says what matches byte for byte on one machine,
 what the environment moves across machines, and how to tell them apart.
 
+## Open
+
+- `pins/aurora_lint.json` pins commit `92eae76c` with `tag: null`; set the
+  tag once `v0.5.2` is cut on that commit.
+- `pins/tools.json`: the Debian 12 cppcheck row has no `package_version`
+  yet; fill it from `dpkg-query -W cppcheck` on a bookworm node.
+- Infer and Frama-C are pinned and checked but have no adapter.
+- No timing table has been produced yet: `tcb timing` exists and was
+  exercised on a small target; a full contention-free session (every tool,
+  the large corpora, N repeats, one machine) is still to run.
+- The bundle schema (`tcb-bundle/1`) is not yet agreed with the benchmark
+  database's ingest; nothing ingest-facing exists here by design.
+
 ## What is committed and what stays local
 
 Raw runs — `runs/<tool>-<version>-<target>-<utc>/` with one record per

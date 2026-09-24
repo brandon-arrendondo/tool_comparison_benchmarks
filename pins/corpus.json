@@ -6,20 +6,45 @@
     "on. Juliet is pinned here too: every tool runs the same suite commit."
   ],
   "source": {
-    "aurora_lint_sha": "92eae76c23265c197c77b365b8c1688f88a1b52d",
+    "aurora_lint_sha": "05bd14f9ea5fbc249818b91d416ea1b09b2bf793",
     "path": "data/benchmark_repos.json",
-    "sha256": "1e02f4f86bc741482f11cda3e09e4c645b4341b391eade5710605cec51128177"
+    "sha256": "169acbaa29d8d2cdc8e3987339c32e47e5e0740a648846cf7ebcb5185e44280e"
   },
   "repos": [
     {
       "name": "libcrc",
       "repo": "https://github.com/lammertb/libcrc.git",
-      "version": "7719e2112a9a960b1bba130d02bebdf58e8701f1"
+      "version": "7719e2112a9a960b1bba130d02bebdf58e8701f1",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "Portable C with no platform-alternative sources; the whole audit scope compiles here.",
+        "out_of_config": [],
+        "out_of_config_state": "clean"
+      }
     },
     {
       "name": "sqlite",
       "repo": "https://github.com/sqlite/sqlite.git",
       "version": "b1a73ba34d05b32007315e4065c6468cc638e3af",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "Default autoconf build, SQLITE_OS_UNIX. Compile-time limits at their defaults (SQLITE_MAX_ATTACHED=10).",
+        "out_of_config": [
+          "src/os_win.c",
+          "src/os_win.h",
+          "ext/misc/windirent.h",
+          "ext/misc/sqlite3_stdio.c"
+        ],
+        "out_of_config_state": "scored"
+      },
       "scope_include": [
         "src/**",
         "ext/**"
@@ -50,6 +75,18 @@
       "name": "mosquitto",
       "repo": "https://github.com/eclipse-mosquitto/mosquitto.git",
       "version": "d3ee5c5ca62c0fa4983308c6fff558ee978e878c",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "Default Linux broker + libmosquitto build (epoll mux, no WITH_WEBSOCKETS_BUILTIN change).",
+        "out_of_config": [
+          "src/service.c"
+        ],
+        "out_of_config_state": "scored"
+      },
       "scope_include": [
         "lib/**",
         "src/**",
@@ -65,6 +102,19 @@
       "name": "curl",
       "repo": "https://github.com/curl/curl.git",
       "version": "3e198f75861cc2e12daf299689e145949dddd19b",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "Linux/OpenSSL build. The 14 Windows/Apple WIN_MAC files are already in scope_exclude; out_of_config lists two more that are not.",
+        "out_of_config": [
+          "lib/curlx/fopen.c",
+          "src/tool_doswin.c"
+        ],
+        "out_of_config_state": "scored"
+      },
       "scope_include": [
         "lib/**",
         "src/**"
@@ -90,6 +140,27 @@
       "name": "hostap",
       "repo": "https://git.w1.fi/hostap.git",
       "version": "dcee60436390dd34731560657c4257c3b4c839a6",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "wpa_supplicant + hostapd at their shipped defconfigs: CONFIG_DRIVER_NL80211/WEXT/WIRED/MACSEC_LINUX, os_unix, l2_packet_linux.",
+        "out_of_config": [
+          "src/utils/os_win32.c",
+          "src/utils/os_none.c",
+          "src/l2_packet/l2_packet_winpcap.c",
+          "src/l2_packet/l2_packet_ndis.c",
+          "src/l2_packet/l2_packet_freebsd.c",
+          "src/l2_packet/l2_packet_none.c",
+          "src/drivers/driver_ndis.c",
+          "src/drivers/driver_ndis_.c",
+          "src/drivers/driver_bsd.c",
+          "src/drivers/driver_openbsd.c"
+        ],
+        "out_of_config_state": "scored"
+      },
       "scope_include": [
         "src/**",
         "wpa_supplicant/**",
@@ -100,6 +171,16 @@
       "name": "lua",
       "repo": "https://github.com/lua/lua.git",
       "version": "40b76de2d77e66b70a9d4bf989c3f5340919973f",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "Default `make linux` build (LUA_USE_LINUX). Platform variation is intra-file in luaconf.h, not per-file.",
+        "out_of_config": [],
+        "out_of_config_state": "clean"
+      },
       "scope_include": [
         "*.c",
         "*.h"
@@ -114,6 +195,26 @@
       "name": "raylib",
       "repo": "https://github.com/raysan5/raylib.git",
       "version": "962bbfc6bfbd7a5acd08e21314fcfa161003a589",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "PLATFORM_DESKTOP_GLFW. rcore.c #includes exactly one platforms/*.c as source, so the other nine are never compiled.",
+        "out_of_config": [
+          "src/platforms/rcore_android.c",
+          "src/platforms/rcore_desktop_rgfw.c",
+          "src/platforms/rcore_desktop_sdl.c",
+          "src/platforms/rcore_desktop_win32.c",
+          "src/platforms/rcore_drm.c",
+          "src/platforms/rcore_memory.c",
+          "src/platforms/rcore_template.c",
+          "src/platforms/rcore_web.c",
+          "src/platforms/rcore_web_emscripten.c"
+        ],
+        "out_of_config_state": "scored"
+      },
       "scope_include": [
         "src/*.c",
         "src/*.h",
@@ -127,6 +228,16 @@
       "name": "pureftpd",
       "repo": "https://github.com/jedisct1/pure-ftpd.git",
       "version": "cc28bff52ca28e1d122a2142bf37f2dc578f4d3e",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "Default configure build. The bsd-*.c portability fallbacks are unconditional in src/Makefile.am, so they are in-configuration.",
+        "out_of_config": [],
+        "out_of_config_state": "clean"
+      },
       "scope_include": [
         "src/**",
         "puredb/**"
@@ -136,6 +247,25 @@
       "name": "sel4",
       "repo": "https://github.com/seL4/seL4.git",
       "version": "1326364bc9135d9445d936ebc01e38a402c1f4c6",
+      "primary_build_config": {
+        "id": "linux-x86_64-pc99",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "KernelPlatform=pc99 KernelArch=x86, the compile_commands.json configuration. CMake selects one arch/ and one plat/ subtree; the rest are never compiled.",
+        "out_of_config": [
+          "src/arch/arm/**",
+          "src/arch/riscv/**",
+          "src/arch/x86/32/**",
+          "src/plat/allwinnerA20/**",
+          "src/plat/am335x/**",
+          "src/plat/bcm2837/**",
+          "src/plat/omap3/**",
+          "src/plat/tk1/**"
+        ],
+        "out_of_config_state": "scored"
+      },
       "scope_include": [
         "src/**"
       ]
@@ -144,6 +274,16 @@
       "name": "mbedtls",
       "repo": "https://github.com/Mbed-TLS/mbedtls.git",
       "version": "068ff080b369adfac81509f9b57b2afabaf82dc5",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "Default mbedtls_config.h. Every library/*.c is compiled; feature gating is intra-file and is not a scope boundary.",
+        "out_of_config": [],
+        "out_of_config_state": "clean"
+      },
       "scope_include": [
         "library/**"
       ]
@@ -152,6 +292,16 @@
       "name": "valkey",
       "repo": "https://github.com/valkey-io/valkey.git",
       "version": "7f1dffedff6de73058b2c2a389422b6ecd56c8fb",
+      "primary_build_config": {
+        "id": "linux-x86_64",
+        "platform": "linux",
+        "arch": "x86_64",
+        "endianness": "little",
+        "toolchain": "gcc/glibc",
+        "summary": "Default Linux server build; no platform-alternative sources in scope.",
+        "out_of_config": [],
+        "out_of_config_state": "clean"
+      },
       "scope_include": [
         "src/*.c",
         "src/*.h",
@@ -167,6 +317,16 @@
       "name": "ventoy",
       "repo": "https://github.com/ventoy/Ventoy.git",
       "version": "7cbdc5cf69935bcf1f085ae67f40e70ea7e74bae",
+      "primary_build_config": {
+        "id": "windows-x86",
+        "platform": "windows",
+        "arch": "x86",
+        "endianness": "little",
+        "toolchain": "msvc",
+        "summary": "Ventoy2Disk is a Win32 GUI installer: this corpus is the suite's Win32 oracle, scanned on the Linux host but measuring Windows code. Not a Linux configuration.",
+        "out_of_config": [],
+        "out_of_config_state": "clean"
+      },
       "scope_include": [
         "Ventoy2Disk/Ventoy2Disk/*.c",
         "Ventoy2Disk/Ventoy2Disk/*.h"

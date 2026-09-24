@@ -5,8 +5,8 @@
     "commit; `tag` is null until the release is tagged, then must name this sha."
   ],
   "repo": "https://github.com/brandon-arrendondo/aurora-lint.git",
-  "sha": "92eae76c23265c197c77b365b8c1688f88a1b52d",
-  "tag": "v0.5.2",
-  "version": "0.5.2",
+  "sha": "05bd14f9ea5fbc249818b91d416ea1b09b2bf793",
+  "tag": "v0.5.3",
+  "version": "0.5.3",
   "benchmark_tool_id": "sqc"
 }

@@ -121,8 +121,10 @@ what the environment moves across machines, and how to tell them apart.
 
 ## Open
 
-- `pins/tools.json`: the Debian 12 cppcheck row has no `package_version`
-  yet; fill it from `dpkg-query -W cppcheck` on a bookworm node.
+- The cppcheck golden under `tests/golden/` was made with the Ubuntu 24.04
+  package (cppcheck 2.13.0). On Debian 12 (cppcheck 2.10) `tcb selfcheck`
+  reports its pins as different for cppcheck, as it should; a per-distro
+  golden would make that row checkable there too.
 - Infer and Frama-C are pinned and checked but have no adapter.
 - No timing table has been produced yet: `tcb timing` exists and was
   exercised on a small target; a full contention-free session (every tool,

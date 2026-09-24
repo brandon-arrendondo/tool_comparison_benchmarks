@@ -45,8 +45,7 @@
         },
         "debian-12": {
           "version": "2.10",
-          "package_version": null,
-          "_note": "package_version unverified on a bookworm node; fill in from `dpkg-query -W cppcheck` there"
+          "package_version": "2.10-2"
         }
       },
       "origin": {

@@ -130,7 +130,15 @@ envelope, given with `--cpus LIST --mem-max SIZE` on `tcb run` and
   holds for a tool that sizes its own pool from the machine and ignores
   `--jobs`. Give each tool its best parallel setting inside the set, which
   is `--jobs` equal to the CPU count; the bundle notes an oversubscribed
-  run.
+  run. A parallel setting must not cost a tool any checks: cppcheck 2.10
+  turns off its whole-program checks (`unusedFunction`, the cross-TU
+  `ctu*` checks) under `-j` unless it has a build dir, so under `-j` > 1
+  the adapter gives it a fresh, empty `--cppcheck-build-dir` per run and
+  records that in `meta.json` (`tool_options`). The findings then match a
+  `-j 1` run on (file, line, column, check). A cross-TU message can name
+  a different caller from run to run, because it depends on analysis
+  order. Scoring keys on (file, line, rule), not on the message, and the
+  findings sort is left alone so that a byte-level diff still shows it.
 - **Memory cap, swap off.** A cgroup v2 `memory.max` with
   `memory.swap.max` = 0, covering *all* of a run's processes at once. That
   is the figure that matters for the per-file tools, which run a dozen

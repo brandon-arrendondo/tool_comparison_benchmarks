@@ -3,7 +3,13 @@ not enabled; mapping/cppcheck.json is the hand-made bridge to CERT/CWE).
 
 Real-world: the command aurora-lint's bench/realworld_runner.py builds for
 the codebase (its cppcheck include list and source dirs), one invocation,
-XML v2 on stderr. Juliet: one invocation per test-case file with the
+XML v2 on stderr. With `-j` above 1 the invocation also gets a fresh, empty
+`--cppcheck-build-dir` inside the run's workdir: without one, cppcheck 2.10
+turns off its whole-program checks (`unusedFunction`, the cross-TU `ctu*`
+checks) under `-j`, so a parallel run would report less than a serial one.
+The directory is new for every run, so no analysis result is ever reused
+from a previous run, which would falsify both the findings and the timing.
+At `-j 1` no build dir is passed, as aurora-lint's own runner does. Juliet: one invocation per test-case file with the
 suite's support directory on the include path, as bench/competitors.py
 does; files run in parallel and the bundle sorts, so parallelism cannot
 change the output.
@@ -55,9 +61,20 @@ class Adapter(BaseAdapter):
         m = re.search(r"Cppcheck (\d+\.\d+(?:\.\d+)?)", run_timed(["cppcheck", "--version"]).stdout)
         return m.group(1) if m else "unknown"
 
-    def run_realworld(self, cfg: dict, workdir: Path, jobs: int) -> tuple[list[Completed], list[dict]]:
+    def realworld_argv(self, cfg: dict, workdir: Path, jobs: int) -> list[str]:
         rr = al_bench.modules()["realworld_runner"]
         argv = rr._build_cppcheck_cmd(cfg) + ["-j", str(jobs)]
+        if jobs > 1:
+            build = workdir / "cppcheck-build"
+            build.mkdir()          # fails if it exists: never a warm build dir
+            argv.append(f"--cppcheck-build-dir={build}")
+            self.tool_options["cppcheck_build_dir"] = "fresh per run (whole-program checks under -j)"
+        else:
+            self.tool_options["cppcheck_build_dir"] = None
+        return argv
+
+    def run_realworld(self, cfg: dict, workdir: Path, jobs: int) -> tuple[list[Completed], list[dict]]:
+        argv = self.realworld_argv(cfg, workdir, jobs)
         done = run_timed(argv, timeout=4 * 3600)
         (workdir / "cppcheck.xml").write_text(done.stderr)
         return [done], parse_xml(done.stderr, Path(cfg["path"]))

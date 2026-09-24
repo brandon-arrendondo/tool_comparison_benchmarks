@@ -104,6 +104,7 @@ class BaseAdapter:
 
     def __init__(self, name: str):
         self.name = name
+        self.tool_options: dict = {}     # run-shaping options, written to meta.json
 
     def version(self) -> str:
         raise NotImplementedError

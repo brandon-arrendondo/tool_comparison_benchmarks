@@ -97,6 +97,8 @@ def run_realworld(tool: str, codebase: str, jobs: int, root: Path | None = None)
     with envelope.tool_run() as rc:
         dones, recs = ad.run_realworld(cfg, workdir, jobs)
     bundle.meta["timing"]["scan_wall_s"] = round(time.monotonic() - t0, 3)
+    if ad.tool_options:
+        bundle.meta["tool_options"] = dict(ad.tool_options)
     _record(bundle, dones, root=Path(cfg["path"]))
     recs, dropped = _dedupe(recs)
     if dropped:

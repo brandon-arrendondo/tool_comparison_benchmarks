@@ -8,7 +8,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import MANIFESTS_DIR, al_bench, check as check_mod, pins
+from . import MANIFESTS_DIR, al_bench, check as check_mod, envelope, pins
 from .bundle import Bundle
 from . import mapping as mapping_mod
 from .tools import adapter as get_adapter
@@ -42,7 +42,8 @@ def _record(bundle: Bundle, dones, workdir_note: str = "", root: Path | None = N
     must be able to say how partial, so the failed targets are summarised."""
     failed = []
     for d in dones:
-        bundle.record_command(d.argv, None, d.returncode, d.wall_s, d.user_s, d.sys_s, workdir_note)
+        bundle.record_command(d.argv, None, d.returncode, d.wall_s, d.user_s, d.sys_s, workdir_note,
+                              max_rss_kb=d.max_rss_kb)
         if d.returncode not in (0, 1) or (d.returncode == 1 and ": error:" in d.stdout + d.stderr):
             target = next((a for a in d.argv[1:] if not a.startswith("-") and Path(a).suffix in (".c", ".h")), d.argv[-1])
             failed.append(relpath(target, root) if root else target)
@@ -64,6 +65,21 @@ def _tool_check_name(tool: str) -> str | None:
     return None if tool.startswith("aurora-lint") else tool
 
 
+def _envelope_status(bundle: Bundle, rc, status: str, jobs: int) -> str:
+    """Record the envelope and what the run used against it. A run the
+    memory cap killed is status `oom`: a result for that tool on that
+    target, never something to retry with more memory."""
+    env = envelope.active()
+    bundle.record_envelope(env.describe(), rc.result)
+    if env.cpus is not None and jobs > len(env.cpus):
+        bundle.note(f"--jobs {jobs} exceeds the {len(env.cpus)}-CPU envelope; the tool was oversubscribed")
+    if rc.result.get("oom_kills"):
+        bundle.note(f"memory cap exceeded: {rc.result['oom_kills']} process(es) OOM-killed under "
+                    f"memory.max={env.mem_max_bytes}")
+        return "oom"
+    return status
+
+
 def run_realworld(tool: str, codebase: str, jobs: int, root: Path | None = None) -> Path:
     tool_rows = check_mod.check_tools([_tool_check_name(tool)]) if _tool_check_name(tool) else []
     rows = tool_rows + check_mod.check_corpus([codebase]) + check_mod.check_aurora_lint()
@@ -78,7 +94,8 @@ def run_realworld(tool: str, codebase: str, jobs: int, root: Path | None = None)
     workdir = bundle.dir / "raw"
     workdir.mkdir()
     t0 = time.monotonic()
-    dones, recs = ad.run_realworld(cfg, workdir, jobs)
+    with envelope.tool_run() as rc:
+        dones, recs = ad.run_realworld(cfg, workdir, jobs)
     bundle.meta["timing"]["scan_wall_s"] = round(time.monotonic() - t0, 3)
     _record(bundle, dones, root=Path(cfg["path"]))
     recs, dropped = _dedupe(recs)
@@ -87,6 +104,7 @@ def run_realworld(tool: str, codebase: str, jobs: int, root: Path | None = None)
     for r in recs:
         bundle.add_finding(project=codebase, codebase_commit=entry["version"], **r)
     status = "timeout" if any(d.returncode == 124 for d in dones) else "ok"
+    status = _envelope_status(bundle, rc, status, jobs)
     _attach_mapping(bundle, tool, [r["check_id"] for r in recs])
     return bundle.finish(status)
 
@@ -128,51 +146,53 @@ def run_juliet(tool: str, cwes: list[str] | None, jobs: int, root: Path | None =
     flaw_rows = []
     status = "ok"
     bundle.meta["timing"]["scan_wall_s"] = 0.0
-    for d in dirs:
-        cwe_id = re.match(r"(CWE\d+)", d.name).group(1)
-        files = sorted(d.rglob("*.c"))
-        sections = {f: al_bench.juliet_sections(f) for f in files}
-        with_bad = sum(1 for s in sections.values() if s["bad_lines"])
-        # Juliet marks each injected defect with a `FLAW:` comment. Only the
-        # ones inside a bad region are defects -- the good variants carry
-        # `POTENTIAL FLAW:` comments on code the fix makes safe -- so those
-        # positions are the recall denominator that travels with the bundle
-        # (a CWE-matched bad-region finding within one line of one is a hit,
-        # as aurora-lint's own Juliet benchmark counts it).
-        n_flaw = 0
-        for f, sec in sections.items():
-            for ln in sorted(sec["flaw_lines"] & sec["bad_lines"]):
-                flaw_rows.append([cwe_id, relpath(str(f), d.parent), ln])
-                n_flaw += 1
-        t0 = time.monotonic()
-        dones, recs = ad.run_juliet_cwe(d, support, workdir, jobs)
-        bundle.meta["timing"]["scan_wall_s"] = round(bundle.meta["timing"]["scan_wall_s"] + time.monotonic() - t0, 3)
-        if not dones and not recs:
-            bundle.note(f"{d.name}: skipped -- {tool} has no per-CWE manifest for it at the pinned commit")
-            per_cwe.append([d.name, cwe_id, len(files), with_bad, n_flaw, "skipped", 0, 0, 0, 0])
-            continue
-        _record(bundle, dones, d.name, root=d.parent)
-        if any(x.returncode == 124 for x in dones):
-            status = "timeout"
-        recs, dropped = _dedupe(recs)
-        if dropped:
-            bundle.note(f"{d.name}: {dropped} exact-duplicate records dropped")
-        by_name = {f.name: f for f in files}
-        counts = {"bad": 0, "good": 0, "unknown": 0}
-        for r in recs:
-            f = by_name.get(Path(r["file_path"]).name)
-            sec = "unknown"
-            if f is not None:
-                s = sections[f]
-                sec = "bad" if r["line"] in s["bad_lines"] else "good" if r["line"] in s["good_lines"] else "unknown"
-            elif Path(r["file_path"]).suffix == ".h" or "testcasesupport" in r["file_path"]:
-                sec = "support"
-            counts[sec if sec in counts else "unknown"] += 1
-            bundle.add_finding(project="juliet", codebase_commit=j["sha"], cwe=cwe_id,
-                               testcase=f.stem if f is not None else None, section=sec, **r)
-        per_cwe.append([d.name, cwe_id, len(files), with_bad, n_flaw, "ok", len(recs),
-                        counts["bad"], counts["good"], counts["unknown"]])
-        print(f"{d.name:55s} files={len(files):5d} findings={len(recs):6d} bad={counts['bad']:5d} good={counts['good']:5d}", flush=True)
+    with envelope.tool_run() as rc:
+        for d in dirs:
+            cwe_id = re.match(r"(CWE\d+)", d.name).group(1)
+            files = sorted(d.rglob("*.c"))
+            sections = {f: al_bench.juliet_sections(f) for f in files}
+            with_bad = sum(1 for s in sections.values() if s["bad_lines"])
+            # Juliet marks each injected defect with a `FLAW:` comment. Only the
+            # ones inside a bad region are defects -- the good variants carry
+            # `POTENTIAL FLAW:` comments on code the fix makes safe -- so those
+            # positions are the recall denominator that travels with the bundle
+            # (a CWE-matched bad-region finding within one line of one is a hit,
+            # as aurora-lint's own Juliet benchmark counts it).
+            n_flaw = 0
+            for f, sec in sections.items():
+                for ln in sorted(sec["flaw_lines"] & sec["bad_lines"]):
+                    flaw_rows.append([cwe_id, relpath(str(f), d.parent), ln])
+                    n_flaw += 1
+            t0 = time.monotonic()
+            dones, recs = ad.run_juliet_cwe(d, support, workdir, jobs)
+            bundle.meta["timing"]["scan_wall_s"] = round(bundle.meta["timing"]["scan_wall_s"] + time.monotonic() - t0, 3)
+            if not dones and not recs:
+                bundle.note(f"{d.name}: skipped -- {tool} has no per-CWE manifest for it at the pinned commit")
+                per_cwe.append([d.name, cwe_id, len(files), with_bad, n_flaw, "skipped", 0, 0, 0, 0])
+                continue
+            _record(bundle, dones, d.name, root=d.parent)
+            if any(x.returncode == 124 for x in dones):
+                status = "timeout"
+            recs, dropped = _dedupe(recs)
+            if dropped:
+                bundle.note(f"{d.name}: {dropped} exact-duplicate records dropped")
+            by_name = {f.name: f for f in files}
+            counts = {"bad": 0, "good": 0, "unknown": 0}
+            for r in recs:
+                f = by_name.get(Path(r["file_path"]).name)
+                sec = "unknown"
+                if f is not None:
+                    s = sections[f]
+                    sec = "bad" if r["line"] in s["bad_lines"] else "good" if r["line"] in s["good_lines"] else "unknown"
+                elif Path(r["file_path"]).suffix == ".h" or "testcasesupport" in r["file_path"]:
+                    sec = "support"
+                counts[sec if sec in counts else "unknown"] += 1
+                bundle.add_finding(project="juliet", codebase_commit=j["sha"], cwe=cwe_id,
+                                   testcase=f.stem if f is not None else None, section=sec, **r)
+            per_cwe.append([d.name, cwe_id, len(files), with_bad, n_flaw, "ok", len(recs),
+                            counts["bad"], counts["good"], counts["unknown"]])
+            print(f"{d.name:55s} files={len(files):5d} findings={len(recs):6d} bad={counts['bad']:5d} good={counts['good']:5d}", flush=True)
+    status = _envelope_status(bundle, rc, status, jobs)
     with open(bundle.dir / "per_cwe.csv", "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["cwe_dir", "cwe", "files", "files_with_bad_section", "flaw_lines", "status",

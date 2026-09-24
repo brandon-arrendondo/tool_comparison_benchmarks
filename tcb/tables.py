@@ -14,7 +14,9 @@ to commit (ADR-0007: aggregates with provenance, never per-finding rows).
   realworld-counts      per project x tool: in-scope findings, files, mapped share, coverage
   realworld-precision   per project x tool: labeled TP/FP and precision over
                         the labeled keys, coverage of the label set
-  timing                per timing record: median / min / max / MAD, CPU
+  timing                per timing record: median / min / max / MAD, CPU,
+                        peak memory, and the envelope it was measured under
+  resources             per bundle: envelope, CPU time, peak memory, OOM
   environment           what each bundle was measured on
 """
 
@@ -251,18 +253,53 @@ def realworld_precision(bundles: list[Path], labels_repo: Path, out_dir: Path | 
 
 # ── timing and environment ─────────────────────────────────────────────────
 
+def _gib(n: int | None) -> str:
+    return "" if n is None else f"{n / (1 << 30):.2f}"
+
+
 def timing(records: list[Path], out_dir: Path | None) -> str:
+    """One row per timing record. The envelope columns say what each figure
+    was measured under: a record made before the envelope existed has them
+    blank, and is not comparable with one that has them."""
     rows, metas = [], []
     for p in records:
         r = json.loads(p.read_text())
         s = r["summary"]
-        rows.append([r["tool"], r["target"], r["repeats"], r["cache"], r["jobs"], s["wall_median_s"],
-                     s["wall_min_s"], s["wall_max_s"], s["wall_mad_s"], s["cpu_median_s"],
+        ev = r.get("envelope") or {}
+        rows.append([r["tool"], r["target"], r["repeats"], r["cache"], r["jobs"],
+                     ev.get("cpu_count", ""), _gib(ev.get("memory_max_bytes")),
+                     s["wall_median_s"], s["wall_min_s"], s["wall_max_s"], s["wall_mad_s"], s["cpu_median_s"],
+                     _gib(s.get("cgroup_memory_peak_max_bytes")), _gib(s.get("max_process_rss_max_bytes")),
                      r["environment"]["cpu_model"], "yes" if s["valid"] else "NO"])
         metas.append({"tool": r["tool"], "tool_version": "", "environment": r["environment"]})
-    header = ["tool", "target", "repeats", "cache", "jobs", "wall_median_s", "wall_min_s", "wall_max_s",
-              "wall_mad_s", "cpu_median_s", "cpu", "valid"]
+    header = ["tool", "target", "repeats", "cache", "jobs", "cpus", "mem_cap_gib",
+              "wall_median_s", "wall_min_s", "wall_max_s", "wall_mad_s", "cpu_median_s",
+              "cgroup_peak_gib", "max_process_rss_gib", "cpu", "valid"]
     return _emit("timing", header, rows, _footer(metas), out_dir)
+
+
+def resources(bundles: list[Path], out_dir: Path | None) -> str:
+    """Per bundle: the envelope it ran under and what the tool used against
+    it -- CPU time next to wall, the cgroup's peak (the figure the cap is
+    enforced against; it includes charged page cache) and the largest
+    single-process RSS. An `oom` status means the tool exceeded the cap on
+    that target. Wall here is informational; a published runtime comes from
+    the timing table."""
+    rows, metas = [], []
+    for b in bundles:
+        m = read_meta(b)
+        metas.append(m)
+        ev = m.get("envelope") or {}
+        cmds = m.get("commands", [])
+        cpu = sum((c.get("user_s") or 0) + (c.get("sys_s") or 0) for c in cmds)
+        rows.append([m["tool"], m["tool_version"], m["target"], m["status"],
+                     ev.get("cpus", "") or "", ev.get("cpu_count", ""), _gib(ev.get("memory_max_bytes")),
+                     m.get("timing", {}).get("scan_wall_s", ""), round(cpu, 3),
+                     _gib(ev.get("cgroup_memory_peak_bytes")), _gib(ev.get("max_process_rss_bytes")),
+                     ev.get("oom_kills", "")])
+    header = ["tool", "version", "target", "status", "cpu_list", "cpus", "mem_cap_gib",
+              "scan_wall_s", "cpu_s", "cgroup_peak_gib", "max_process_rss_gib", "oom_kills"]
+    return _emit("resources", header, rows, _footer(metas), out_dir)
 
 
 def environment(bundles: list[Path], out_dir: Path | None) -> str:
@@ -282,5 +319,5 @@ def environment(bundles: list[Path], out_dir: Path | None) -> str:
 TABLES = {
     "juliet-per-cwe": juliet_per_cwe, "juliet-summary": juliet_summary,
     "realworld-counts": realworld_counts, "realworld-precision": realworld_precision,
-    "timing": timing, "environment": environment,
+    "timing": timing, "resources": resources, "environment": environment,
 }

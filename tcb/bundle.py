@@ -76,14 +76,25 @@ class Bundle:
 
     def record_command(self, argv: list[str], cwd: str | None, returncode: int,
                        wall_s: float, user_s: float | None = None, sys_s: float | None = None,
-                       note: str = "") -> None:
+                       note: str = "", max_rss_kb: int | None = None) -> None:
         self.meta["commands"].append({
             "argv": list(argv), "cwd": cwd, "returncode": returncode,
             "wall_s": round(wall_s, 3),
             "user_s": None if user_s is None else round(user_s, 3),
             "sys_s": None if sys_s is None else round(sys_s, 3),
+            "max_rss_kb": max_rss_kb,
             "note": note,
         })
+
+    def record_envelope(self, envelope: dict, measured: dict | None = None) -> None:
+        """The CPU set and memory cap the tool ran under, and what it used
+        against them (see tcb/envelope.py for what each figure means)."""
+        rec = dict(envelope)
+        rss = [c["max_rss_kb"] for c in self.meta["commands"] if c.get("max_rss_kb") is not None]
+        rec["max_process_rss_bytes"] = max(rss) * 1024 if rss else None
+        rec.update(measured or {})
+        self.meta["envelope"] = rec
+        self.write_meta()
 
     def add_finding(self, **fields) -> None:
         unknown = set(fields) - set(FINDING_FIELDS)

@@ -2,11 +2,14 @@
 and the relative-path convention every finding uses."""
 
 import os
-import resource
+import signal
 import subprocess
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
+
+from .. import envelope
 
 
 @dataclass
@@ -18,31 +21,72 @@ class Completed:
     wall_s: float
     user_s: float
     sys_s: float
+    max_rss_kb: int | None = None
+
+
+def _drain(stream, sink: list[bytes]) -> None:
+    sink.append(stream.read())
+    stream.close()
 
 
 def run_timed(argv: list[str], cwd: Path | None = None, timeout: int | None = None,
               env: dict | None = None) -> Completed:
-    """Run one tool invocation, capturing output and the child's CPU time.
-    Deterministic environment: LC_ALL=C so tool output and any sort inside a
-    tool are locale-independent."""
+    """Run one tool invocation, capturing output, the child's CPU time and its
+    peak resident set. Deterministic environment: LC_ALL=C so tool output and
+    any sort inside a tool are locale-independent.
+
+    The child is reaped with wait4, so its CPU time and ru_maxrss are its own
+    (and those of the descendants it waited for). A before/after difference
+    of RUSAGE_CHILDREN is not: the per-file adapters run a dozen invocations
+    at once from a thread pool, and each difference would also count every
+    other invocation that finished in between.
+
+    The recorded argv is the tool's; the envelope prefix (cgroup join and
+    CPU set) is applied here and recorded once in meta.json instead."""
     full_env = dict(os.environ)
     full_env["LC_ALL"] = "C"
     if env:
         full_env.update(env)
-    before = resource.getrusage(resource.RUSAGE_CHILDREN)
     t0 = time.monotonic()
-    try:
-        p = subprocess.run(argv, cwd=cwd, capture_output=True, text=True,
-                           timeout=timeout, env=full_env, errors="replace")
-        rc, out, err = p.returncode, p.stdout, p.stderr
-    except subprocess.TimeoutExpired as e:
-        rc = 124
-        out = (e.stdout or b"").decode(errors="replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
-        err = (e.stderr or b"").decode(errors="replace") if isinstance(e.stderr, bytes) else (e.stderr or "")
+    p = subprocess.Popen(envelope.wrap_argv(argv), cwd=cwd, env=full_env,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out_b: list[bytes] = []
+    err_b: list[bytes] = []
+    readers = [threading.Thread(target=_drain, args=(p.stdout, out_b), daemon=True),
+               threading.Thread(target=_drain, args=(p.stderr, err_b), daemon=True)]
+    for r in readers:
+        r.start()
+    # The timeout kills from a timer thread. The child is first waited for
+    # without being reaped (WNOWAIT), so its pid cannot be reused while the
+    # timer can still fire; only then is it reaped for its rusage.
+    lock = threading.Lock()
+    state = {"exited": False, "timed_out": False}
+
+    def expire() -> None:
+        with lock:
+            if not state["exited"]:
+                state["timed_out"] = True
+                os.kill(p.pid, signal.SIGKILL)
+
+    timer = threading.Timer(timeout, expire) if timeout is not None else None
+    if timer:
+        timer.daemon = True
+        timer.start()
+    os.waitid(os.P_PID, p.pid, os.WEXITED | os.WNOWAIT)
+    with lock:
+        state["exited"] = True
+    if timer:
+        timer.cancel()
+    _, status, ru = os.wait4(p.pid, 0)
+    p.returncode = os.waitstatus_to_exitcode(status)   # reaped here; Popen must not wait again
+    timed_out = state["timed_out"]
     wall = time.monotonic() - t0
-    after = resource.getrusage(resource.RUSAGE_CHILDREN)
-    return Completed(list(argv), rc, out, err, wall,
-                     after.ru_utime - before.ru_utime, after.ru_stime - before.ru_stime)
+    for r in readers:
+        r.join()
+    out = b"".join(out_b).decode(errors="replace")
+    err = b"".join(err_b).decode(errors="replace")
+    rc = 124 if timed_out else p.returncode
+    return Completed(list(argv), rc, out, err, wall, ru.ru_utime, ru.ru_stime, ru.ru_maxrss)
 
 
 def relpath(path: str, root: Path) -> str:

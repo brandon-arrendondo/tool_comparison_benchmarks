@@ -67,6 +67,22 @@ exit status and CPU time, mapping digests and coverage), `findings.jsonl`
 `per_cwe.csv`. The Juliet CWE list is `manifests/juliet_cwes.txt`, the
 same for every tool; `--cwes` narrows it.
 
+For a comparison, give every tool the same resource envelope: a fixed CPU
+set and a hard memory cap with swap off (`docs/DESIGN.md`, "Resource
+envelope"). The cap needs a systemd user instance that delegates the
+memory controller; the CPU set needs only `taskset`.
+
+```bash
+CPUS=0,2,4,6,8,10,12,14,16,18,20,22    # one NUMA node, from lscpu
+python3 -m tcb run juliet    --tool cppcheck --jobs 12 --cpus $CPUS --mem-max 32G
+python3 -m tcb run realworld --tool clang-tidy --codebase lua --jobs 12 --cpus $CPUS --mem-max 32G
+python3 -m tcb run juliet    --tool aurora-lint --cwes CWE476_NULL_Pointer_Dereference --jobs 1 --cpus 0 --mem-max 32G   # single-CPU pass
+python3 -m tcb table resources runs/*/ --out tables/     # envelope, CPU time, peak memory, OOM per bundle
+```
+
+A run that exceeds the cap ends with status `oom`, which is a result for
+that tool on that target and not a reason to raise the cap.
+
 ## Tables
 
 One command per table, from bundles, CSV + Markdown, footer naming every
@@ -78,6 +94,7 @@ python3 -m tcb table juliet-summary      runs/*-juliet-2026*/ --out tables/
 python3 -m tcb table realworld-counts    runs/*-lua-*/ runs/*-libcrc-*/ --out tables/
 python3 -m tcb table realworld-precision runs/*-lua-*/ --labels-repo ../benchmark_adjudication --out tables/
 python3 -m tcb table timing              runs/timing/*.json --out tables/
+python3 -m tcb table resources           runs/*/ --out tables/
 python3 -m tcb table environment         runs/*/ --out tables/
 ```
 

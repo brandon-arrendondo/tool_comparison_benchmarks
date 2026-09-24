@@ -4,12 +4,17 @@
   tcb build-aurora-lint [--jobs N]
   tcb env [--json]
   tcb bundles [--dir DIR]
-  tcb run realworld --tool T --codebase C [--jobs N]
-  tcb run juliet --tool T [--cwes CWE121_...,CWE476_...] [--jobs N]
+  tcb run realworld --tool T --codebase C [--jobs N] [--cpus LIST] [--mem-max SIZE]
+  tcb run juliet --tool T [--cwes CWE121_...,CWE476_...] [--jobs N] [--cpus LIST] [--mem-max SIZE]
   tcb mapping-coverage BUNDLE_DIR
   tcb selfcheck [--tools T,T] [--update] [--jobs N]
   tcb table NAME BUNDLE... [--out DIR] [--labels-repo PATH]
   tcb timing --tool T --target C|juliet|juliet:CWE... [--repeats N] [--warmup N] [--cold] [--jobs N]
+             [--cpus LIST] [--mem-max SIZE]
+
+--cpus and --mem-max are the resource envelope (tcb/envelope.py): every
+tool process runs on that CPU set under that hard memory cap, swap off.
+Give every tool in a comparison the same envelope.
 """
 
 import argparse
@@ -24,6 +29,24 @@ from . import bundle as bundle_mod
 
 def _csv(s: str | None) -> list[str] | None:
     return [x for x in s.split(",") if x] if s else None
+
+
+def _add_envelope_args(sp) -> None:
+    sp.add_argument("--cpus", help="CPU list every tool process is pinned to, e.g. 0,2,4 or 0-11")
+    sp.add_argument("--mem-max", help="hard memory cap for each tool run, swap disabled, e.g. 32G")
+
+
+def _activate_envelope(args, argv: list[str]) -> None:
+    from . import envelope
+    cpus_spec, mem_spec = getattr(args, "cpus", None), getattr(args, "mem_max", None)
+    if cpus_spec is None and mem_spec is None:
+        return
+    try:
+        cpus = envelope.parse_cpus(cpus_spec) if cpus_spec else None
+        mem = envelope.parse_bytes(mem_spec) if mem_spec else None
+    except ValueError as e:
+        sys.exit(str(e))
+    envelope.activate(cpus, mem, argv)
 
 
 def cmd_check(args) -> int:
@@ -148,6 +171,7 @@ def main(argv=None) -> int:
     r.add_argument("--codebase", help="realworld: a corpus name from pins/corpus.json")
     r.add_argument("--cwes", help="juliet: comma-separated CWE directory names (default: manifests/juliet_cwes.txt)")
     r.add_argument("--jobs", type=int, default=8)
+    _add_envelope_args(r)
     r.set_defaults(func=cmd_run)
 
     mp = sub.add_parser("mapping-coverage", help="how much of a bundle the check mapping speaks for")
@@ -169,19 +193,22 @@ def main(argv=None) -> int:
     t.add_argument("--jobs", type=int, default=8)
     t.add_argument("--max-load", type=float, default=1.0)
     t.add_argument("--force", action="store_true", help="time under contention anyway (recorded, marked invalid)")
+    _add_envelope_args(t)
     t.set_defaults(func=cmd_timing)
 
     tb = sub.add_parser("table", help="one result table from bundles (or timing records), CSV + Markdown")
     tb.add_argument("name", choices=["juliet-per-cwe", "juliet-summary", "realworld-counts",
-                                     "realworld-precision", "timing", "environment"])
+                                     "realworld-precision", "timing", "resources", "environment"])
     tb.add_argument("inputs", nargs="+", help="bundle directories (timing: runs/timing/*.json)")
     tb.add_argument("--labels-repo", help="realworld-precision: path to a benchmark_adjudication clone")
     tb.add_argument("--out", help="directory to write <name>.csv, <name>.md and <name>.footer.json")
     tb.set_defaults(func=cmd_table)
 
-    args = p.parse_args(argv)
+    raw_argv = list(argv) if argv is not None else sys.argv[1:]
+    args = p.parse_args(raw_argv)
     if args.cmd == "run" and args.what == "realworld" and not args.codebase:
         p.error("run realworld needs --codebase")
+    _activate_envelope(args, raw_argv)
     return args.func(args)
 
 

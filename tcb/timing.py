@@ -36,7 +36,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import RUNS_DIR, pins
+from . import RUNS_DIR, envelope, pins
 from . import env as env_mod
 from .bundle import finding_keys, read_meta
 from .run import run_juliet, run_realworld
@@ -59,6 +59,11 @@ def contention(max_load: float) -> list[str]:
     if busy:
         reasons.append(f"running: {', '.join(busy)}")
     return reasons
+
+
+def _max_or_none(values) -> int | None:
+    vals = [v for v in values if v is not None]
+    return max(vals) if vals else None
 
 
 def drop_caches() -> None:
@@ -90,6 +95,7 @@ def measure(tool: str, target: str, repeats: int, jobs: int, warmup: int, cold: 
         "repeats": repeats, "warmup": warmup, "cache": "cold" if cold else "warm",
         "contention_at_start": reasons, "forced": bool(reasons and force),
         "environment": env_mod.record(), "pins": pins.pin_digests(),
+        "envelope": envelope.active().describe(),
         "started_at": started, "runs": [], "findings_identical": None, "summary": {},
     }
     record["environment"].pop("dev_packages", None)   # the hash is enough here
@@ -116,6 +122,9 @@ def measure(tool: str, target: str, repeats: int, jobs: int, warmup: int, cold: 
                 "sys_s": round(sum(c["sys_s"] or 0 for c in cmds), 3),
                 "invocations": len(cmds), "findings": m["finding_count"], "status": m["status"],
                 "load_before": os.getloadavg()[0],
+                "cgroup_memory_peak_bytes": m.get("envelope", {}).get("cgroup_memory_peak_bytes"),
+                "max_process_rss_bytes": m.get("envelope", {}).get("max_process_rss_bytes"),
+                "oom_kills": m.get("envelope", {}).get("oom_kills"),
             }
             keys = finding_keys(d)
             if keys0 is None:
@@ -132,6 +141,8 @@ def measure(tool: str, target: str, repeats: int, jobs: int, warmup: int, cold: 
         "wall_median_s": round(med, 3), "wall_min_s": round(min(walls), 3), "wall_max_s": round(max(walls), 3),
         "wall_mad_s": round(statistics.median(abs(w - med) for w in walls), 3),
         "cpu_median_s": round(statistics.median(r["user_s"] + r["sys_s"] for r in record["runs"]), 3),
+        "cgroup_memory_peak_max_bytes": _max_or_none(r["cgroup_memory_peak_bytes"] for r in record["runs"]),
+        "max_process_rss_max_bytes": _max_or_none(r["max_process_rss_bytes"] for r in record["runs"]),
         "valid": record["findings_identical"] and not record["forced"],
     }
     record["finished_at"] = datetime.now(timezone.utc).isoformat()

@@ -110,9 +110,66 @@ sequential, per-repeat wall + user/sys, reports median/min/max/MAD, and is
 the *only* source a timing table reads; `duration` in ordinary runs is
 informational.
 
+**CPU time is per invocation.** Each tool process is reaped with `wait4`,
+so its user/sys time and `ru_maxrss` are its own (plus the descendants it
+waited for). A before/after difference of `RUSAGE_CHILDREN` is not: the
+per-file adapters run a dozen invocations at once, and each difference would
+also count every invocation that finished in between.
+
+## Resource envelope
+
+A comparison has to survive two objections: that a tool is faster only
+because it was given more cores than it was designed for, and that it
+only fits because the machine has far more memory than a typical one. So
+every tool in a comparison, aurora-lint included, runs inside the same
+envelope, given with `--cpus LIST --mem-max SIZE` on `tcb run` and
+`tcb timing` (tcb/envelope.py):
+
+- **CPU set.** Every tool invocation starts through `taskset -c LIST`. The
+  affinity is inherited by every thread and child process, so the cap
+  holds for a tool that sizes its own pool from the machine and ignores
+  `--jobs`. Give each tool its best parallel setting inside the set, which
+  is `--jobs` equal to the CPU count; the bundle notes an oversubscribed
+  run.
+- **Memory cap, swap off.** A cgroup v2 `memory.max` with
+  `memory.swap.max` = 0, covering *all* of a run's processes at once. That
+  is the figure that matters for the per-file tools, which run a dozen
+  compiler processes in parallel. An unprivileged user gets a writable
+  cgroup from systemd: tcb re-executes itself under `systemd-run --user
+  --scope -p Delegate=yes` and moves itself into a `harness` child, so its
+  own memory (the findings it holds) is never charged to a tool. Each run
+  gets a fresh `tools-N` child carrying the limits, so every run has its
+  own peak. A tool that exceeds the cap is killed, and the bundle's status
+  is `oom`: a result for that tool on that target, never re-run with more.
+- **What is measured.**
+  - `cgroup_memory_peak_bytes` (`memory.peak`) is the most memory all the
+    run's processes held at once, and it is what the cap is enforced
+    against. It includes page cache charged for the tool's reads, so it is
+    an upper bound on resident memory.
+  - `max_process_rss_bytes` is the largest resident set any single tool
+    process reached. It counts shared file pages, such as the tool's own
+    binary, that may be charged elsewhere, so for a single-process tool it
+    can sit slightly above the cgroup peak.
+  - `oom_kills` is the kill count for the run.
+
+  The envelope itself is recorded next to these in `meta.json` and in every
+  timing record: the CPU list and count, the cap, the swap setting and the
+  mechanism. A runtime or memory figure without its envelope is not
+  comparable.
+- **Per-core throughput.** A pass with `--cpus N --jobs 1`, a single CPU,
+  on a small subset separates each tool's per-core speed from its parallel
+  speedup.
+
+Choose the CPU set from `lscpu`: one socket and one NUMA node, so no tool
+pays for cross-socket memory traffic that another avoids. Where one socket
+has fewer physical cores than the cap, take the node's hyperthread siblings
+rather than cross sockets, and say so. Every tool then takes the same
+hyperthreading handicap. The CPU list is in the run record, and the host
+is in the environment record.
+
 ## Tables (one command each; the paper's Makefile calls these)
 
-`tcb table juliet-per-cwe | juliet-summary | realworld-counts |
+`tcb table juliet-per-cwe | juliet-summary | realworld-counts | resources |
 realworld-precision --labels <sha> | timing | environment --bundles ...`
 → CSV + Markdown + a `facts.json` the paper's `gen_facts_tex.py` pattern can
 read. Every table footer names the pins and hashes it was computed from.

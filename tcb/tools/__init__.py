@@ -11,6 +11,8 @@ TOOLS = {
     "aurora-lint-full": "tcb.tools.aurora_lint",   # full-mode manifest on Juliet; same binary
     "cppcheck": "tcb.tools.cppcheck",
     "clang-tidy": "tcb.tools.clang_tidy",
+    "infer": "tcb.tools.infer",
+    "frama-c": "tcb.tools.frama_c",
 }
 
 

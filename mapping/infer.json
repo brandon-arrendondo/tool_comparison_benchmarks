@@ -1,0 +1,179 @@
+{
+  "_comment": [
+    "Hand-made mapping from Infer's native bug types to SEI CERT C rule ids",
+    "and CWE ids. It is DATA, not derived: every entry is a judgement about",
+    "what defect the bug type reports, made from Infer's issue-type",
+    "documentation (`infer help --list-issue-types`, v1.2.0), and the harness",
+    "records this file's sha256 into every run so a table can say which",
+    "version of the judgement it used. A bug type with no entry is reported",
+    "as `unmapped` -- counted, never dropped. `cert: []` means CERT C has no",
+    "rule for the defect; `cwe: []` likewise. Entries cover the C-relevant",
+    "types of the checkers Infer runs by default (pulse, liveness,",
+    "bufferoverrun, biabduction); the Java, Objective-C, C++-only and",
+    "Erlang types are left unmapped on purpose.",
+    "Where a bug type spans several Juliet CWEs, every one it can report is",
+    "listed, because the Juliet tables match a finding to a CWE directory",
+    "exactly. Add entries with a `note` saying why; change one only with a",
+    "note saying what was wrong."
+  ],
+  "source": "hand-made",
+  "unmapped_policy": "counted",
+  "tool": "infer",
+  "entries": {
+    "NULLPTR_DEREFERENCE": {
+      "cert": ["EXP34-C"],
+      "cwe": ["CWE-476"],
+      "note": "pulse: dereference of a pointer that is null on some path"
+    },
+    "NULL_DEREFERENCE": {
+      "cert": ["EXP34-C"],
+      "cwe": ["CWE-476"],
+      "note": "biabduction's null dereference"
+    },
+    "NULL_ARGUMENT": {
+      "cert": ["EXP34-C"],
+      "cwe": ["CWE-476"],
+      "note": "null passed where the callee dereferences it"
+    },
+    "MEMORY_LEAK_C": {
+      "cert": ["MEM31-C"],
+      "cwe": ["CWE-401"],
+      "note": "allocated memory not freed"
+    },
+    "PULSE_RESOURCE_LEAK": {
+      "cert": ["FIO42-C"],
+      "cwe": ["CWE-775"],
+      "note": "resource (in C, a FILE* or descriptor) not released; as cppcheck resourceLeak"
+    },
+    "RESOURCE_LEAK": {
+      "cert": ["FIO42-C"],
+      "cwe": ["CWE-775"],
+      "note": "biabduction's resource leak"
+    },
+    "USE_AFTER_FREE": {
+      "cert": ["MEM30-C"],
+      "cwe": ["CWE-416"],
+      "note": "access through a pointer after free; pulse reports a second free as this type too"
+    },
+    "USE_AFTER_LIFETIME": {
+      "cert": ["DCL30-C"],
+      "cwe": ["CWE-562"],
+      "note": "in C, access to an object after its storage duration ended"
+    },
+    "STACK_VARIABLE_ADDRESS_ESCAPE": {
+      "cert": ["DCL30-C"],
+      "cwe": ["CWE-562"],
+      "note": "address of a local escapes its scope"
+    },
+    "PULSE_UNINITIALIZED_VALUE": {
+      "cert": ["EXP33-C"],
+      "cwe": ["CWE-457"],
+      "note": "read of an uninitialized value"
+    },
+    "DEAD_STORE": {
+      "cert": ["MSC13-C"],
+      "cwe": ["CWE-563"],
+      "note": "liveness: value written and never read; as clang-analyzer DeadStores"
+    },
+    "BUFFER_OVERRUN_L1": {
+      "cert": ["ARR30-C"],
+      "cwe": ["CWE-119", "CWE-121", "CWE-122", "CWE-124", "CWE-125", "CWE-126", "CWE-127", "CWE-787"],
+      "note": "bufferoverrun, most certain level; an offset past either end, read or write"
+    },
+    "BUFFER_OVERRUN_L2": {
+      "cert": ["ARR30-C"],
+      "cwe": ["CWE-119", "CWE-121", "CWE-122", "CWE-124", "CWE-125", "CWE-126", "CWE-127", "CWE-787"],
+      "note": "as L1, less certain"
+    },
+    "BUFFER_OVERRUN_L3": {
+      "cert": ["ARR30-C"],
+      "cwe": ["CWE-119", "CWE-121", "CWE-122", "CWE-124", "CWE-125", "CWE-126", "CWE-127", "CWE-787"],
+      "note": "as L1, less certain"
+    },
+    "BUFFER_OVERRUN_L4": {
+      "cert": ["ARR30-C"],
+      "cwe": ["CWE-119", "CWE-121", "CWE-122", "CWE-124", "CWE-125", "CWE-126", "CWE-127", "CWE-787"],
+      "note": "as L1, less certain (not on by default)"
+    },
+    "BUFFER_OVERRUN_L5": {
+      "cert": ["ARR30-C"],
+      "cwe": ["CWE-119", "CWE-121", "CWE-122", "CWE-124", "CWE-125", "CWE-126", "CWE-127", "CWE-787"],
+      "note": "as L1, least certain (not on by default)"
+    },
+    "BUFFER_OVERRUN_S2": {
+      "cert": ["ARR30-C"],
+      "cwe": ["CWE-119", "CWE-121", "CWE-122", "CWE-124", "CWE-125", "CWE-126", "CWE-127", "CWE-787"],
+      "note": "symbolic-bound overrun"
+    },
+    "BUFFER_OVERRUN_U5": {
+      "cert": ["ARR30-C"],
+      "cwe": ["CWE-119", "CWE-121", "CWE-122", "CWE-124", "CWE-125", "CWE-126", "CWE-127", "CWE-787"],
+      "note": "unbounded-index overrun (not on by default)"
+    },
+    "INTEGER_OVERFLOW_L1": {
+      "cert": ["INT30-C", "INT32-C"],
+      "cwe": ["CWE-190", "CWE-191"],
+      "note": "bufferoverrun's arithmetic overflow or underflow, signedness not distinguished"
+    },
+    "INTEGER_OVERFLOW_L2": {
+      "cert": ["INT30-C", "INT32-C"],
+      "cwe": ["CWE-190", "CWE-191"],
+      "note": "as L1, less certain"
+    },
+    "INTEGER_OVERFLOW_L5": {
+      "cert": ["INT30-C", "INT32-C"],
+      "cwe": ["CWE-190", "CWE-191"],
+      "note": "as L1, least certain (not on by default)"
+    },
+    "INTEGER_OVERFLOW_U5": {
+      "cert": ["INT30-C", "INT32-C"],
+      "cwe": ["CWE-190", "CWE-191"],
+      "note": "unbounded operand (not on by default)"
+    },
+    "INFERBO_ALLOC_IS_NEGATIVE": {
+      "cert": ["MEM35-C"],
+      "cwe": ["CWE-131"],
+      "note": "allocation size computed negative"
+    },
+    "INFERBO_ALLOC_MAY_BE_NEGATIVE": {
+      "cert": ["MEM35-C"],
+      "cwe": ["CWE-131"],
+      "note": "as INFERBO_ALLOC_IS_NEGATIVE, possible"
+    },
+    "INFERBO_ALLOC_IS_ZERO": {
+      "cert": ["MEM04-C"],
+      "cwe": ["CWE-687"],
+      "note": "zero-length allocation"
+    },
+    "INFERBO_ALLOC_IS_BIG": {
+      "cert": [],
+      "cwe": ["CWE-789"],
+      "note": "allocation size beyond a sane bound"
+    },
+    "INFERBO_ALLOC_MAY_BE_BIG": {
+      "cert": [],
+      "cwe": ["CWE-789"],
+      "note": "as INFERBO_ALLOC_IS_BIG, possible"
+    },
+    "UNREACHABLE_CODE": {
+      "cert": ["MSC12-C"],
+      "cwe": ["CWE-561"],
+      "note": "bufferoverrun proved a statement unreachable"
+    },
+    "CONSTANT_ADDRESS_DEREFERENCE": {
+      "cert": [],
+      "cwe": ["CWE-822"],
+      "note": "dereference of a fixed integer address; as clang-analyzer FixedAddressDereference has no CERT rule"
+    },
+    "CHECKERS_PRINTF_ARGS": {
+      "cert": ["FIO47-C"],
+      "cwe": ["CWE-686"],
+      "note": "printf arguments do not match the format"
+    },
+    "INHERENTLY_DANGEROUS_FUNCTION": {
+      "cert": ["MSC24-C"],
+      "cwe": ["CWE-242"],
+      "note": "call to a function that cannot be used safely"
+    }
+  }
+}

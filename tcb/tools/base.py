@@ -22,6 +22,10 @@ class Completed:
     user_s: float
     sys_s: float
     max_rss_kb: int | None = None
+    # Set by an adapter when a nonzero exit is expected and costs no coverage
+    # (Frama-C rejecting a proposed entry point it does not know): the
+    # invocation is still recorded, but not counted as a failed target.
+    expected: str | None = None
 
 
 def _drain(stream, sink: list[bytes]) -> None:
@@ -105,6 +109,7 @@ class BaseAdapter:
     def __init__(self, name: str):
         self.name = name
         self.tool_options: dict = {}     # run-shaping options, written to meta.json
+        self.coverage: dict = {}         # what a partial-by-design tool reached, ditto
 
     def version(self) -> str:
         raise NotImplementedError

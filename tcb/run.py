@@ -44,6 +44,8 @@ def _record(bundle: Bundle, dones, workdir_note: str = "", root: Path | None = N
     for d in dones:
         bundle.record_command(d.argv, None, d.returncode, d.wall_s, d.user_s, d.sys_s, workdir_note,
                               max_rss_kb=d.max_rss_kb)
+        if d.expected:
+            continue
         if d.returncode not in (0, 1) or (d.returncode == 1 and ": error:" in d.stdout + d.stderr):
             target = next((a for a in d.argv[1:] if not a.startswith("-") and Path(a).suffix in (".c", ".h")), d.argv[-1])
             failed.append(relpath(target, root) if root else target)
@@ -51,6 +53,14 @@ def _record(bundle: Bundle, dones, workdir_note: str = "", root: Path | None = N
     cov["invocations"] += len(dones)
     cov["failed"] += len(failed)
     cov["failed_targets"].extend(failed)
+
+
+def _tool_coverage(bundle: Bundle, ad) -> None:
+    """What a partial-by-design tool (Infer's capture, Frama-C's bounded
+    entry points) reached, as the adapter measured it, next to the generic
+    invocation counts. A finding count from a partial run is a floor."""
+    if getattr(ad, "coverage", None):
+        bundle.meta.setdefault("coverage", {})["tool"] = ad.coverage
 
 
 def _attach_mapping(bundle: Bundle, tool: str, check_ids: list[str]) -> None:
@@ -100,12 +110,13 @@ def run_realworld(tool: str, codebase: str, jobs: int, root: Path | None = None)
     if ad.tool_options:
         bundle.meta["tool_options"] = dict(ad.tool_options)
     _record(bundle, dones, root=Path(cfg["path"]))
+    _tool_coverage(bundle, ad)
     recs, dropped = _dedupe(recs)
     if dropped:
         bundle.note(f"{dropped} exact-duplicate records dropped (same file/line/column/check/message)")
     for r in recs:
         bundle.add_finding(project=codebase, codebase_commit=entry["version"], **r)
-    status = "timeout" if any(d.returncode == 124 for d in dones) else "ok"
+    status = "timeout" if any(d.returncode == 124 and not d.expected for d in dones) else "ok"
     status = _envelope_status(bundle, rc, status, jobs)
     _attach_mapping(bundle, tool, [r["check_id"] for r in recs])
     return bundle.finish(status)
@@ -173,7 +184,7 @@ def run_juliet(tool: str, cwes: list[str] | None, jobs: int, root: Path | None =
                 per_cwe.append([d.name, cwe_id, len(files), with_bad, n_flaw, "skipped", 0, 0, 0, 0])
                 continue
             _record(bundle, dones, d.name, root=d.parent)
-            if any(x.returncode == 124 for x in dones):
+            if any(x.returncode == 124 and not x.expected for x in dones):
                 status = "timeout"
             recs, dropped = _dedupe(recs)
             if dropped:
@@ -195,6 +206,9 @@ def run_juliet(tool: str, cwes: list[str] | None, jobs: int, root: Path | None =
                             counts["bad"], counts["good"], counts["unknown"]])
             print(f"{d.name:55s} files={len(files):5d} findings={len(recs):6d} bad={counts['bad']:5d} good={counts['good']:5d}", flush=True)
     status = _envelope_status(bundle, rc, status, jobs)
+    if ad.tool_options:
+        bundle.meta["tool_options"] = dict(ad.tool_options)
+    _tool_coverage(bundle, ad)
     with open(bundle.dir / "per_cwe.csv", "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["cwe_dir", "cwe", "files", "files_with_bad_section", "flaw_lines", "status",

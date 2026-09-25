@@ -1,0 +1,300 @@
+{
+  "_comment": [
+    "Hand-made mapping from Frama-C EVA's alarm kinds to SEI CERT C rule ids",
+    "and CWE ids. EVA has no rule ids: a check id here is EVA's own alarm",
+    "text as tcb/tools/frama_c.py normalises it ('out of bounds read',",
+    "'precondition of memcpy'), stable under the pinned Frama-C 33.0. Every",
+    "entry is a judgement about the defect the alarm asserts cannot happen,",
+    "made by reading the alarm's ACSL predicate, and the harness records this",
+    "file's sha256 into every run so a table can say which version of the",
+    "judgement it used. A kind with no entry and no matching pattern is",
+    "reported as `unmapped` -- counted, never dropped. `cert: []` means CERT C",
+    "has no rule for the defect; `cwe: []` likewise.",
+    "EVA's memory-validity alarms (\\valid, \\valid_read) fail for a null",
+    "pointer as much as for an out-of-range one, so they carry CWE-476; they",
+    "do not carry CWE-690, which the other mappings keep for checks that mean",
+    "specifically an unchecked allocation result. Where an alarm spans several",
+    "Juliet CWEs every one it can report is listed, because the Juliet tables",
+    "match a finding to a CWE directory exactly.",
+    "Precondition alarms name the callee whose ACSL contract a call may break;",
+    "the patterns group callees by what the contract protects. A callee not in",
+    "a group (printf-family varargs, fclose, sigaction, ...) stays unmapped",
+    "because its precondition mixes unrelated properties.",
+    "Add entries with a `note` saying why; change one only with a note saying",
+    "what was wrong."
+  ],
+  "source": "hand-made",
+  "unmapped_policy": "counted",
+  "tool": "frama-c",
+  "patterns": [
+    {
+      "regex": "^precondition of (memcpy|memmove|memset|wmemcpy|wmemmove|wmemset|strcpy|strncpy|strcat|strncat|wcscpy|wcsncpy|wcscat|wcsncat)$",
+      "cert": "ARR38-C",
+      "cwe": [
+        "CWE-119",
+        "CWE-120",
+        "CWE-121",
+        "CWE-122",
+        "CWE-124",
+        "CWE-126",
+        "CWE-127",
+        "CWE-787"
+      ],
+      "note": "a copy/fill/concatenate call whose destination or source range is not valid for the size"
+    },
+    {
+      "regex": "^precondition of (fgets|fgetws|fread|fwrite)$",
+      "cert": "ARR38-C",
+      "cwe": [
+        "CWE-119",
+        "CWE-120"
+      ],
+      "note": "a stream call whose buffer is not valid for the size given"
+    },
+    {
+      "regex": "^precondition of (memcmp|memchr|wmemcmp|wmemchr)$",
+      "cert": "ARR38-C",
+      "cwe": [
+        "CWE-119",
+        "CWE-125",
+        "CWE-126"
+      ],
+      "note": "a compare/search call whose range is not valid to read for the size"
+    },
+    {
+      "regex": "^precondition of (strlen|wcslen|strchr|wcschr|strrchr|strcmp|strncmp|wcscmp|strcoll|strpbrk|strspn|strcspn|strstr|strtod|strtol|strtoul|atoi|atol|atof|getenv|system|remove|rename|mkstemp)$",
+      "cert": "STR32-C",
+      "cwe": [
+        "CWE-170",
+        "CWE-126"
+      ],
+      "note": "a call whose string argument may not be a valid, null-terminated string"
+    },
+    {
+      "regex": "^precondition of (abs|labs|llabs|imaxabs)$",
+      "cert": "INT32-C",
+      "cwe": [
+        "CWE-190"
+      ],
+      "note": "absolute value of the most negative integer"
+    },
+    {
+      "regex": "^precondition of (acos|asin|atan2|pow|sqrt|log|log10|log2|exp|floor|ceil|frexp|fmod)f?l?$",
+      "cert": "FLP32-C",
+      "cwe": [],
+      "note": "a math function called outside its domain or with a non-finite argument"
+    }
+  ],
+  "entries": {
+    "out of bounds write": {
+      "cert": [
+        "ARR30-C",
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-119",
+        "CWE-121",
+        "CWE-122",
+        "CWE-124",
+        "CWE-476",
+        "CWE-787"
+      ],
+      "note": "\\valid(p) fails on a store: past either end, or null"
+    },
+    "out of bounds read": {
+      "cert": [
+        "ARR30-C",
+        "EXP34-C"
+      ],
+      "cwe": [
+        "CWE-119",
+        "CWE-125",
+        "CWE-126",
+        "CWE-127",
+        "CWE-476"
+      ],
+      "note": "\\valid_read(p) fails on a load: past either end, or null"
+    },
+    "accessing out of bounds index": {
+      "cert": [
+        "ARR30-C"
+      ],
+      "cwe": [
+        "CWE-119",
+        "CWE-121",
+        "CWE-122",
+        "CWE-124",
+        "CWE-125",
+        "CWE-126",
+        "CWE-127",
+        "CWE-129"
+      ],
+      "note": "an array index outside the declared bounds, read or write"
+    },
+    "signed overflow": {
+      "cert": [
+        "INT32-C"
+      ],
+      "cwe": [
+        "CWE-190",
+        "CWE-191"
+      ],
+      "note": "signed arithmetic past either limit; as cppcheck integerOverflow, CWE-680 not listed"
+    },
+    "signed downcast": {
+      "cert": [
+        "INT31-C"
+      ],
+      "cwe": [
+        "CWE-197",
+        "CWE-681"
+      ],
+      "note": "conversion to a narrower signed type that loses the value"
+    },
+    "division by zero": {
+      "cert": [
+        "INT33-C"
+      ],
+      "cwe": [
+        "CWE-369"
+      ],
+      "note": ""
+    },
+    "accessing uninitialized left-value": {
+      "cert": [
+        "EXP33-C"
+      ],
+      "cwe": [
+        "CWE-457",
+        "CWE-908"
+      ],
+      "note": "read of an uninitialized object"
+    },
+    "accessing left-value that contains escaping addresses": {
+      "cert": [
+        "MEM30-C",
+        "DCL30-C"
+      ],
+      "cwe": [
+        "CWE-416",
+        "CWE-562"
+      ],
+      "note": "read of a pointer to freed memory or to a local whose lifetime ended (\\dangling)"
+    },
+    "precondition of free": {
+      "cert": [
+        "MEM30-C",
+        "MEM34-C"
+      ],
+      "cwe": [
+        "CWE-415",
+        "CWE-416",
+        "CWE-590",
+        "CWE-761"
+      ],
+      "note": "\\freeable(p) fails: already freed, not from an allocator, or not the start of the block"
+    },
+    "precondition of realloc": {
+      "cert": [
+        "MEM34-C"
+      ],
+      "cwe": [
+        "CWE-590",
+        "CWE-761"
+      ],
+      "note": "realloc of a pointer that is not freeable"
+    },
+    "unaligned pointer creation": {
+      "cert": [
+        "EXP36-C"
+      ],
+      "cwe": [],
+      "note": "a pointer converted to a type with stricter alignment"
+    },
+    "overflow in conversion from floating-point to integer": {
+      "cert": [
+        "FLP34-C"
+      ],
+      "cwe": [
+        "CWE-681"
+      ],
+      "note": "float to integer conversion out of range"
+    },
+    "non-finite double value": {
+      "cert": [
+        "FLP32-C"
+      ],
+      "cwe": [],
+      "note": "an operation produced an infinity or NaN"
+    },
+    "non-finite float value": {
+      "cert": [
+        "FLP32-C"
+      ],
+      "cwe": [],
+      "note": "as non-finite double value"
+    },
+    "non-finite long double value": {
+      "cert": [
+        "FLP32-C"
+      ],
+      "cwe": [],
+      "note": "as non-finite double value"
+    },
+    "invalid LHS operand for left shift": {
+      "cert": [
+        "INT34-C"
+      ],
+      "cwe": [
+        "CWE-1335"
+      ],
+      "note": "left shift of a negative value; as clang-analyzer BitwiseShift"
+    },
+    "invalid RHS operand for shift": {
+      "cert": [
+        "INT34-C"
+      ],
+      "cwe": [
+        "CWE-1335"
+      ],
+      "note": "shift by a negative amount or by at least the width"
+    },
+    "pointer comparison": {
+      "cert": [
+        "ARR36-C"
+      ],
+      "cwe": [
+        "CWE-469"
+      ],
+      "note": "relational comparison of pointers into different objects"
+    },
+    "pointer subtraction": {
+      "cert": [
+        "ARR36-C"
+      ],
+      "cwe": [
+        "CWE-469"
+      ],
+      "note": "subtraction of pointers into different objects"
+    },
+    "pointer to function with incompatible type": {
+      "cert": [
+        "EXP37-C"
+      ],
+      "cwe": [
+        "CWE-686"
+      ],
+      "note": "a call through a function pointer whose type does not match the callee"
+    },
+    "partially overlapping lvalue assignment": {
+      "cert": [],
+      "cwe": [],
+      "note": "assignment between partially overlapping objects (C11 6.5.16.1p3); CERT C has no rule for it"
+    },
+    "trap representation of a _Bool lvalue": {
+      "cert": [],
+      "cwe": [],
+      "note": "a _Bool object holding a value other than 0 or 1"
+    }
+  }
+}

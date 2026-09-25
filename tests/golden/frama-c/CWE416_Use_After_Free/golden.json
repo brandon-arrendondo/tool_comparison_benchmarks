@@ -1,0 +1,18 @@
+{
+  "aurora_lint_sha": "05bd14f9ea5fbc249818b91d416ea1b09b2bf793",
+  "finding_count": 171,
+  "juliet_sha": "f88433e3443648a17671398797a04ea1f8e1a274",
+  "made_on": {
+    "distro_id": "ubuntu-24.04",
+    "glibc": "glibc 2.39"
+  },
+  "pins": {
+    "aurora_lint.json": "e7c3a8793f66f9a20e8c61393eef81f3b42de74ea222f5b9e45cb8e310dbe5c8",
+    "corpus.json": "5d3c51b2da23057387e528d14c2e6047ef1c2b10f45b2b84f0109c64420d2808",
+    "labels.json": "b53b1e424188f24783939e1d3e8e4d12bb5607f5b442e0e4b6b5378efe5f086f",
+    "tools.json": "4cf39cb33c2af12250dafb5ac7b60143e9cab62b0d54344ef5a7a8f62bae1f94"
+  },
+  "sample": "CWE416_Use_After_Free",
+  "tool": "frama-c",
+  "tool_version": "33.0"
+}

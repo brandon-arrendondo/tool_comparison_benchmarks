@@ -26,10 +26,9 @@ mismatch as a tool difference.
 ## Status
 
 All five phases of `docs/DESIGN.md` are built: pins and checks, adapters
-and runners for aurora-lint (two modes), cppcheck and clang-tidy,
-findings-level bundles, the check mapping, the self-check, the timing
-protocol and the tables. Infer and Frama-C are pinned and checked but have
-no adapter yet.
+and runners for aurora-lint (two modes), cppcheck, clang-tidy, Infer and
+Frama-C, findings-level bundles, the check mapping, the self-check, the
+timing protocol and the tables.
 
 ## Setup
 
@@ -57,8 +56,27 @@ python3 -m tcb run juliet    --tool aurora-lint            # per-CWE manifest (f
 python3 -m tcb run juliet    --tool aurora-lint-full       # rules-all.toml
 python3 -m tcb run juliet    --tool cppcheck
 python3 -m tcb run juliet    --tool clang-tidy
+python3 -m tcb run juliet    --tool infer
+python3 -m tcb run juliet    --tool frama-c
 python3 -m tcb run realworld --tool cppcheck --codebase lua
 ```
+
+Infer and Frama-C build from the codebase's `compile_commands.json`
+(aurora-lint's `playbooks/setup-compile-commands.yml` writes it; its sha256
+goes into the bundle), cut to the same scope every other tool is measured
+over, so a codebase without one has nothing for them to run on. Both are
+partial by design, and `meta.json`'s `coverage.tool` says how partial: Infer
+records the translation units it could capture, and Frama-C, which analyses
+one entry function at a time under a per-entry timeout, a cap on entries per
+file and a wall-clock budget, records the entry points it reached. A real-world
+Frama-C finding count is therefore a floor, never a total; the adapter's
+docstring (`tcb/tools/frama_c.py`) says what such a row can and cannot
+support. Infer's analysis is deterministic only at `--jobs 1` (in parallel,
+the order procedures are summarised in changes what it reports), so as with
+cppcheck, its findings of record come from a `--jobs 1` run and a parallel
+run is for timing; the bundle's `tool_options.deterministic` says which it
+is. Frama-C's bounds are wall clock, so its coverage depends on `--jobs` and
+the machine as well: compare two Frama-C runs only at the same settings.
 
 Each run writes one bundle under `runs/` (see `tcb bundles`): `meta.json`
 (the checks as they passed, the environment, every command line with its
@@ -125,7 +143,8 @@ what the environment moves across machines, and how to tell them apart.
   package (cppcheck 2.13.0). On Debian 12 (cppcheck 2.10) `tcb selfcheck`
   reports its pins as different for cppcheck, as it should; a per-distro
   golden would make that row checkable there too.
-- Infer and Frama-C are pinned and checked but have no adapter.
+- sel4 has no `compile_commands.json` in the provisioned corpus, so Infer
+  and Frama-C have nothing to run on there.
 - No timing table has been produced yet: `tcb timing` exists and was
   exercised on a small target; a full contention-free session (every tool,
   the large corpora, N repeats, one machine) is still to run.

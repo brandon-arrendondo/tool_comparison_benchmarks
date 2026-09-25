@@ -7,7 +7,7 @@ Postgres-blind, no node names in committed content, no vendored tools.
 ## What it is
 
 A standalone harness that runs aurora-lint and its competitors (cppcheck,
-clang-tidy; Infer and Frama-C spec'd, run later) on the same pinned inputs
+clang-tidy, Infer, Frama-C) on the same pinned inputs
 and produces, with **one command per table**, the numbers the comparison
 paper (`cert_c_tool_comparison_paper`, task 1390) prints. Everything a
 reproducer needs is named by a SHA or a hash and checked before a run:
@@ -72,9 +72,13 @@ what 1390 adjudicates from, and what the paper's tables are computed from.
 
 **Findings-level for every tool** (aurora_lint 766): cppcheck via
 `--xml-version=2` per location; clang-tidy via `-export-fixes`/YAML or the
-`file:line:col: warning: ... [check]` text, both parsed to records, never to
-counts. Native ids stay native in the bundle; the mapping is applied only
-when a table asks for CERT/CWE columns.
+`file:line:col: warning: ... [check]` text; Infer via its `report.json`
+(bug type as the check id); Frama-C via each `[eva:alarm]` message (EVA's
+alarm text as the check id, the asserted predicate in the message) -- all
+parsed to records, never to counts. Native ids stay native in the bundle;
+the mapping is applied only when a table asks for CERT/CWE columns. Infer's
+capture and Frama-C's bounded entry-point walk are partial by design, and
+their adapters record how partial under `coverage.tool` in `meta.json`.
 
 ## What may be committed, and how a reader regenerates the rest
 
@@ -194,4 +198,4 @@ read. Every table footer names the pins and hashes it was computed from.
    three tools on Juliet + libcrc + lua, selfcheck green.
 
 Not in scope: adjudicating competitor findings (1390), Postgres ingest
-(benchmarking_db), re-measuring Infer/Frama-C (specs and checks only).
+(benchmarking_db).

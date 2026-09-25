@@ -1,0 +1,5 @@
+check_id,section,findings
+DEAD_STORE,good,12
+MEMORY_LEAK_C,bad,1
+MEMORY_LEAK_C,good,32
+NULLPTR_DEREFERENCE,good,4

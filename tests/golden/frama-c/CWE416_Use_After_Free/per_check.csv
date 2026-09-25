@@ -1,0 +1,4 @@
+check_id,section,findings
+accessing left-value that contains escaping addresses,bad,126
+out of bounds read,bad,12
+out of bounds read,good,33
